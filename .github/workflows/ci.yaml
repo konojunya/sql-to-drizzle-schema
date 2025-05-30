@@ -24,12 +24,18 @@ jobs:
       with:
         go-version: ${{ env.GO_VERSION }}
 
+    - name: Get Go cache paths
+      id: go-cache-paths
+      run: |
+        echo "go-build=$(go env GOCACHE)" >> $GITHUB_OUTPUT
+        echo "go-mod=$(go env GOMODCACHE)" >> $GITHUB_OUTPUT
+
     - name: Cache Go modules
       uses: actions/cache@v4
       with:
         path: |
-          ~/.cache/go-build
-          ~/go/pkg/mod
+          ${{ steps.go-cache-paths.outputs.go-build }}
+          ${{ steps.go-cache-paths.outputs.go-mod }}
         key: ${{ runner.os }}-lint-go-${{ hashFiles('**/go.sum') }}
         restore-keys: |
           ${{ runner.os }}-lint-go-
@@ -69,12 +75,18 @@ jobs:
       with:
         go-version: ${{ env.GO_VERSION }}
 
+    - name: Get Go cache paths
+      id: go-cache-paths
+      run: |
+        echo "go-build=$(go env GOCACHE)" >> $GITHUB_OUTPUT
+        echo "go-mod=$(go env GOMODCACHE)" >> $GITHUB_OUTPUT
+
     - name: Cache Go modules
       uses: actions/cache@v4
       with:
         path: |
-          ~/.cache/go-build
-          ~/go/pkg/mod
+          ${{ steps.go-cache-paths.outputs.go-build }}
+          ${{ steps.go-cache-paths.outputs.go-mod }}
         key: ${{ runner.os }}-security-go-${{ hashFiles('**/go.sum') }}
         restore-keys: |
           ${{ runner.os }}-security-go-
@@ -105,12 +117,18 @@ jobs:
       with:
         go-version: ${{ matrix.go-version }}
 
+    - name: Get Go cache paths
+      id: go-cache-paths
+      run: |
+        echo "go-build=$(go env GOCACHE)" >> $GITHUB_OUTPUT
+        echo "go-mod=$(go env GOMODCACHE)" >> $GITHUB_OUTPUT
+
     - name: Cache Go modules
       uses: actions/cache@v4
       with:
         path: |
-          ~/.cache/go-build
-          ~/go/pkg/mod
+          ${{ steps.go-cache-paths.outputs.go-build }}
+          ${{ steps.go-cache-paths.outputs.go-mod }}
         key: ${{ runner.os }}-test-${{ matrix.go-version }}-go-${{ hashFiles('**/go.sum') }}
         restore-keys: |
           ${{ runner.os }}-test-${{ matrix.go-version }}-go-
@@ -152,12 +170,18 @@ jobs:
       with:
         go-version: ${{ env.GO_VERSION }}
 
+    - name: Get Go cache paths
+      id: go-cache-paths
+      run: |
+        echo "go-build=$(go env GOCACHE)" >> $GITHUB_OUTPUT
+        echo "go-mod=$(go env GOMODCACHE)" >> $GITHUB_OUTPUT
+
     - name: Cache Go modules
       uses: actions/cache@v4
       with:
         path: |
-          ~/.cache/go-build
-          ~/go/pkg/mod
+          ${{ steps.go-cache-paths.outputs.go-build }}
+          ${{ steps.go-cache-paths.outputs.go-mod }}
         key: ${{ runner.os }}-integration-go-${{ hashFiles('**/go.sum') }}
         restore-keys: |
           ${{ runner.os }}-integration-go-
@@ -208,12 +232,18 @@ jobs:
       with:
         go-version: ${{ env.GO_VERSION }}
 
+    - name: Get Go cache paths
+      id: go-cache-paths
+      run: |
+        echo "go-build=$(go env GOCACHE)" >> $GITHUB_OUTPUT
+        echo "go-mod=$(go env GOMODCACHE)" >> $GITHUB_OUTPUT
+
     - name: Cache Go modules
       uses: actions/cache@v4
       with:
         path: |
-          ~/.cache/go-build
-          ~/go/pkg/mod
+          ${{ steps.go-cache-paths.outputs.go-build }}
+          ${{ steps.go-cache-paths.outputs.go-mod }}
         key: ${{ runner.os }}-build-go-${{ hashFiles('**/go.sum') }}
         restore-keys: |
           ${{ runner.os }}-build-go-
