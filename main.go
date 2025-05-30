@@ -23,11 +23,27 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// printf prints to stdout only if quiet mode is disabled
+func printf(format string, args ...interface{}) {
+	if !quietFlag {
+		fmt.Printf(format, args...)
+	}
+}
+
+// println prints to stdout only if quiet mode is disabled
+func println(args ...interface{}) {
+	if !quietFlag {
+		fmt.Println(args...)
+	}
+}
+
 var (
 	// outputFile stores the path for the generated TypeScript file
 	outputFile string
 	// dialectFlag stores the SQL dialect to use for parsing
 	dialectFlag string
+	// quietFlag controls whether to suppress stdout output
+	quietFlag bool
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -84,9 +100,9 @@ Example usage:
 		}
 
 		// Display conversion information to user
-		fmt.Printf("Converting SQL file: %s\n", sqlFile)
-		fmt.Printf("Output file: %s\n", outputFile)
-		fmt.Printf("Database dialect: %s\n", dialect)
+		printf("Converting SQL file: %s\n", sqlFile)
+		printf("Output file: %s\n", outputFile)
+		printf("Database dialect: %s\n", dialect)
 
 		// Read the SQL file content
 		content, err := reader.ReadSQLFile(sqlFile)
@@ -96,7 +112,7 @@ Example usage:
 		}
 
 		// Parse the SQL content
-		fmt.Println("Parsing SQL content...")
+		println("Parsing SQL content...")
 		parseOptions := parser.DefaultParseOptions()
 		parseOptions.Dialect = dialect
 		parseResult, err := parser.ParseSQLContent(content, dialect, parseOptions)
@@ -106,43 +122,43 @@ Example usage:
 		}
 
 		// Display parsing results
-		fmt.Printf("Successfully parsed %d table(s):\n", len(parseResult.Tables))
+		printf("Successfully parsed %d table(s):\n", len(parseResult.Tables))
 		for _, table := range parseResult.Tables {
-			fmt.Printf("  - Table: %s (%d columns)\n", table.Name, len(table.Columns))
+			printf("  - Table: %s (%d columns)\n", table.Name, len(table.Columns))
 			for _, column := range table.Columns {
-				fmt.Printf("    - %s: %s", column.Name, column.Type)
+				printf("    - %s: %s", column.Name, column.Type)
 				if column.Length != nil {
-					fmt.Printf("(%d)", *column.Length)
+					printf("(%d)", *column.Length)
 				}
 				if column.NotNull {
-					fmt.Print(" NOT NULL")
+					printf(" NOT NULL")
 				}
 				if column.AutoIncrement {
-					fmt.Print(" AUTO_INCREMENT")
+					printf(" AUTO_INCREMENT")
 				}
 				if column.DefaultValue != nil {
-					fmt.Printf(" DEFAULT %s", *column.DefaultValue)
+					printf(" DEFAULT %s", *column.DefaultValue)
 				}
-				fmt.Println()
+				println()
 			}
 			if len(table.PrimaryKey) > 0 {
-				fmt.Printf("    Primary Key: %v\n", table.PrimaryKey)
+				printf("    Primary Key: %v\n", table.PrimaryKey)
 			}
 			if len(table.ForeignKeys) > 0 {
-				fmt.Printf("    Foreign Keys: %d\n", len(table.ForeignKeys))
+				printf("    Foreign Keys: %d\n", len(table.ForeignKeys))
 			}
 		}
 
 		// Display any parsing errors
 		if len(parseResult.Errors) > 0 {
-			fmt.Printf("\nWarnings during parsing:\n")
+			printf("\nWarnings during parsing:\n")
 			for _, parseErr := range parseResult.Errors {
-				fmt.Printf("  - %v\n", parseErr)
+				printf("  - %v\n", parseErr)
 			}
 		}
 
 		// Generate Drizzle schema
-		fmt.Println("\nGenerating Drizzle ORM schema...")
+		println("\nGenerating Drizzle ORM schema...")
 		generatorOptions := generator.DefaultGeneratorOptions()
 
 		err = generator.GenerateSchemaToFile(parseResult.Tables, dialect, outputFile, generatorOptions)
@@ -151,8 +167,8 @@ Example usage:
 			os.Exit(1)
 		}
 
-		fmt.Printf("✅ Successfully generated Drizzle schema: %s\n", outputFile)
-		fmt.Printf("📝 Generated %d table definition(s)\n", len(parseResult.Tables))
+		printf("✅ Successfully generated Drizzle schema: %s\n", outputFile)
+		printf("📝 Generated %d table definition(s)\n", len(parseResult.Tables))
 	},
 }
 
@@ -165,6 +181,10 @@ func init() {
 	// Add the dialect flag with short (-d) and long (--dialect) forms
 	// If not specified, PostgreSQL will be used as default
 	rootCmd.Flags().StringVarP(&dialectFlag, "dialect", "d", "", "Database dialect (postgresql, mysql, spanner) (default: postgresql)")
+
+	// Add the quiet flag with short (-q) and long (--quiet) forms
+	// If set, suppresses all stdout output
+	rootCmd.Flags().BoolVarP(&quietFlag, "quiet", "q", false, "Suppress all stdout output")
 }
 
 // main is the entry point of the application
