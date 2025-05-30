@@ -139,11 +139,20 @@ godoc -http=:6060
 ## CLI Usage
 
 ```bash
-# Convert SQL file to Drizzle schema
+# Convert SQL file to Drizzle schema with verbose output
 ./sql-to-drizzle-schema input.sql -o schema.ts
 
 # Use default output filename (schema.ts)
 ./sql-to-drizzle-schema input.sql
+
+# Quiet mode for scripting (suppress stdout)
+./sql-to-drizzle-schema input.sql -o schema.ts --quiet
+
+# Specify database dialect
+./sql-to-drizzle-schema input.sql --dialect postgresql -o schema.ts
+
+# Combined flags (short form)
+./sql-to-drizzle-schema input.sql -o schema.ts -q -d postgresql
 
 # Get help
 ./sql-to-drizzle-schema --help
@@ -179,7 +188,7 @@ godoc -http=:6060
 ## Current Status
 
 The project has reached a functional state with complete PostgreSQL support:
-- ✅ CLI framework using Cobra with dialect selection (--dialect flag)
+- ✅ CLI framework using Cobra with dialect selection (--dialect flag) and quiet mode (--quiet flag)
 - ✅ File reading functionality with error handling
 - ✅ Package structure and comprehensive documentation
 - ✅ PostgreSQL SQL parsing (CREATE TABLE statements)

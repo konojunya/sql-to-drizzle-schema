@@ -76,8 +76,10 @@ Usage:
   sql-to-drizzle-schema [SQL_FILE] [flags]
 
 Flags:
+  -d, --dialect string   Database dialect (postgresql, mysql, spanner) (default: postgresql)
   -h, --help            help for sql-to-drizzle-schema
   -o, --output string   Output TypeScript file (default: schema.ts)
+  -q, --quiet           Suppress all stdout output
 ```
 
 ## 📝 Examples
@@ -154,11 +156,17 @@ export const comments = pgTable('comments', {
 
 ### Running the Example
 ```bash
-# Try with the included example
+# Basic conversion with verbose output
 ./sql-to-drizzle-schema ./example/postgres/create-table.sql -o example-output.ts
 
 # Specify dialect explicitly
 ./sql-to-drizzle-schema ./example/postgres/create-table.sql --dialect postgresql -o schema.ts
+
+# Quiet mode for scripting (no stdout output)
+./sql-to-drizzle-schema ./example/postgres/create-table.sql -o schema.ts --quiet
+
+# Short flags
+./sql-to-drizzle-schema ./example/postgres/create-table.sql -o schema.ts -q -d postgresql
 
 # View the generated schema
 cat schema.ts
@@ -244,6 +252,7 @@ go fmt ./...               # Format code
 - ✅ Table dependency ordering for proper schema generation
 - ✅ Comprehensive test suite with high coverage
 - ✅ Auto-generated header comments with "DO NOT EDIT" warnings
+- ✅ Quiet mode support for scripting and automation (`--quiet` flag)
 - 🚧 MySQL parser (planned)
 - 🚧 Spanner parser (planned)
 
