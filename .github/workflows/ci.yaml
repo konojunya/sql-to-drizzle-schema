@@ -315,6 +315,12 @@ jobs:
           echo "Lint job failed"
           exit 1
         fi
+        # Security job uses continue-on-error, so it's always "success" even if security scan fails
+        # We check if it completed but don't fail CI on security issues for now
+        if [[ "${{ needs.security.result }}" != "success" ]]; then
+          echo "Security job failed to complete"
+          exit 1
+        fi
         if [[ "${{ needs.test.result }}" != "success" ]]; then
           echo "Test job failed"
           exit 1
