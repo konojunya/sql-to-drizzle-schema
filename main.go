@@ -64,7 +64,7 @@ Example usage:
 		if outputFile == "" {
 			outputFile = "schema.ts"
 		}
-		
+
 		// Parse and validate dialect
 		var dialect parser.DatabaseDialect
 		switch strings.ToLower(dialectFlag) {
@@ -94,7 +94,7 @@ Example usage:
 			fmt.Fprintf(os.Stderr, "Error reading SQL file: %v\n", err)
 			os.Exit(1)
 		}
-		
+
 		// Parse the SQL content
 		fmt.Println("Parsing SQL content...")
 		parseOptions := parser.DefaultParseOptions()
@@ -104,7 +104,7 @@ Example usage:
 			fmt.Fprintf(os.Stderr, "Error parsing SQL: %v\n", err)
 			os.Exit(1)
 		}
-		
+
 		// Display parsing results
 		fmt.Printf("Successfully parsed %d table(s):\n", len(parseResult.Tables))
 		for _, table := range parseResult.Tables {
@@ -132,7 +132,7 @@ Example usage:
 				fmt.Printf("    Foreign Keys: %d\n", len(table.ForeignKeys))
 			}
 		}
-		
+
 		// Display any parsing errors
 		if len(parseResult.Errors) > 0 {
 			fmt.Printf("\nWarnings during parsing:\n")
@@ -140,17 +140,17 @@ Example usage:
 				fmt.Printf("  - %v\n", parseErr)
 			}
 		}
-		
+
 		// Generate Drizzle schema
 		fmt.Println("\nGenerating Drizzle ORM schema...")
 		generatorOptions := generator.DefaultGeneratorOptions()
-		
+
 		err = generator.GenerateSchemaToFile(parseResult.Tables, dialect, outputFile, generatorOptions)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error generating schema: %v\n", err)
 			os.Exit(1)
 		}
-		
+
 		fmt.Printf("✅ Successfully generated Drizzle schema: %s\n", outputFile)
 		fmt.Printf("📝 Generated %d table definition(s)\n", len(parseResult.Tables))
 	},
@@ -161,7 +161,7 @@ func init() {
 	// Add the output flag with short (-o) and long (--output) forms
 	// If not specified, the default "schema.ts" will be used
 	rootCmd.Flags().StringVarP(&outputFile, "output", "o", "", "Output TypeScript file (default: schema.ts)")
-	
+
 	// Add the dialect flag with short (-d) and long (--dialect) forms
 	// If not specified, PostgreSQL will be used as default
 	rootCmd.Flags().StringVarP(&dialectFlag, "dialect", "d", "", "Database dialect (postgresql, mysql, spanner) (default: postgresql)")

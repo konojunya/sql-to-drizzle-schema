@@ -22,12 +22,12 @@ func ParseSQLContent(content string, dialect DatabaseDialect, options ParseOptio
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Set the dialect in options if not already set
 	if options.Dialect == "" {
 		options.Dialect = dialect
 	}
-	
+
 	return parser.ParseSQL(content, options)
 }
 

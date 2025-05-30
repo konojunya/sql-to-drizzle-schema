@@ -69,10 +69,10 @@ type DrizzleType struct {
 type SchemaGenerator interface {
 	// GenerateSchema generates a complete Drizzle schema from parsed tables
 	GenerateSchema(tables []parser.Table, options GeneratorOptions) (*GeneratedSchema, error)
-	
+
 	// GenerateTable generates a single table definition
 	GenerateTable(table parser.Table, options GeneratorOptions) (*GeneratedTable, error)
-	
+
 	// SupportedDialect returns the database dialect this generator supports
 	SupportedDialect() parser.DatabaseDialect
 }
@@ -81,7 +81,7 @@ type SchemaGenerator interface {
 type ColumnTypeMapper interface {
 	// MapColumnType maps a SQL column to a Drizzle type definition
 	MapColumnType(column parser.Column) (*DrizzleType, error)
-	
+
 	// SupportedDialect returns the database dialect this mapper supports
 	SupportedDialect() parser.DatabaseDialect
 }

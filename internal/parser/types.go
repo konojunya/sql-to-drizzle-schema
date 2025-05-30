@@ -5,7 +5,6 @@
 // MySQL and Spanner in future versions.
 package parser
 
-
 // DatabaseDialect represents the SQL dialect being parsed
 type DatabaseDialect string
 
@@ -122,7 +121,7 @@ type ParseOptions struct {
 type SQLParser interface {
 	// ParseSQL parses SQL content and returns structured table definitions
 	ParseSQL(content string, options ParseOptions) (*ParseResult, error)
-	
+
 	// SupportedDialect returns the SQL dialect this parser supports
 	SupportedDialect() DatabaseDialect
 }

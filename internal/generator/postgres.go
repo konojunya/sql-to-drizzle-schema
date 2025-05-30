@@ -189,7 +189,7 @@ func (g *PostgreSQLSchemaGenerator) GenerateSchema(tables []parser.Table, option
 	for imp := range importSet {
 		importList = append(importList, imp)
 	}
-	
+
 	// Sort imports for consistency (basic alphabetical)
 	for i := 0; i < len(importList); i++ {
 		for j := i + 1; j < len(importList); j++ {
@@ -216,7 +216,7 @@ func (g *PostgreSQLSchemaGenerator) GenerateSchema(tables []parser.Table, option
 
 	// Build complete content
 	var contentBuilder strings.Builder
-	
+
 	// Add imports
 	for _, imp := range schema.Imports {
 		contentBuilder.WriteString(imp)
@@ -282,7 +282,7 @@ func (g *PostgreSQLSchemaGenerator) sortTablesByDependencies(tables []parser.Tab
 // GenerateTable generates a single table definition
 func (g *PostgreSQLSchemaGenerator) GenerateTable(table parser.Table, options GeneratorOptions) (*GeneratedTable, error) {
 	exportName := g.convertCase(table.Name, options.TableNameCase)
-	
+
 	var builder strings.Builder
 	indent := strings.Repeat(" ", options.IndentSize)
 
@@ -302,10 +302,10 @@ func (g *PostgreSQLSchemaGenerator) GenerateTable(table parser.Table, options Ge
 		}
 
 		columnName := g.convertCase(column.Name, options.ColumnNameCase)
-		
+
 		// Build column definition
 		builder.WriteString(fmt.Sprintf("%s%s: %s(%s)", indent, columnName, drizzleType.Function, strings.Join(drizzleType.Args, ", ")))
-		
+
 		// Add method chains
 		for _, option := range drizzleType.Options {
 			builder.WriteString(fmt.Sprintf(".%s", option))
@@ -370,7 +370,7 @@ func (g *PostgreSQLSchemaGenerator) toCamelCase(input string) string {
 	if len(words) == 0 {
 		return input
 	}
-	
+
 	result := words[0]
 	for i := 1; i < len(words); i++ {
 		if len(words[i]) > 0 {
@@ -384,7 +384,7 @@ func (g *PostgreSQLSchemaGenerator) toCamelCase(input string) string {
 func (g *PostgreSQLSchemaGenerator) toPascalCase(input string) string {
 	words := strings.Split(input, "_")
 	var result string
-	
+
 	for _, word := range words {
 		if len(word) > 0 {
 			result += strings.ToUpper(word[:1]) + word[1:]

@@ -208,17 +208,22 @@ sql-to-drizzle-schema/
 git clone https://github.com/konojunya/sql-to-drizzle-schema.git
 cd sql-to-drizzle-schema
 
-# Download dependencies
-go mod download
+# Using Makefile (recommended)
+make help                    # Show all available commands
+make build                   # Build the binary
+make test                    # Run all tests
+make test-coverage          # Run tests with coverage
+make fmt                    # Format code
+make lint                   # Run linter (requires golangci-lint)
+make check                  # Run all checks (fmt, vet, lint, test)
+make example                # Build and run with example file
+make clean                  # Clean build artifacts
 
-# Build the project
-go build -o sql-to-drizzle-schema
-
-# Run tests
-go test ./...
-
-# Format code
-go fmt ./...
+# Or using Go commands directly
+go mod download             # Download dependencies
+go build -o sql-to-drizzle-schema  # Build the project
+go test ./...              # Run tests
+go fmt ./...               # Format code
 ```
 
 ### Project Status
@@ -232,9 +237,44 @@ go fmt ./...
 - ✅ Complete end-to-end conversion pipeline
 - ✅ Foreign key relationships with .references() support
 - ✅ Table dependency ordering for proper schema generation
+- ✅ Comprehensive test suite with high coverage
 - 🚧 MySQL parser (planned)
 - 🚧 Spanner parser (planned)
-- 🚧 Test suite (planned)
+
+### Testing
+
+This project includes a comprehensive test suite with high coverage:
+
+- **Unit Tests**: All internal packages have dedicated test files
+  - `internal/reader`: 100% coverage - File reading and error handling
+  - `internal/parser`: 83.7% coverage - SQL parsing and validation
+  - `internal/generator`: 78.2% coverage - Schema generation and type mapping
+- **Integration Tests**: End-to-end conversion pipeline testing
+- **CLI Tests**: Command-line interface validation and flag testing
+
+**Running Tests:**
+```bash
+# Using Makefile (recommended)
+make test                   # Run all tests
+make test-coverage         # Run tests with coverage
+make test-coverage-view    # Run tests with coverage and open in browser
+make test-verbose          # Run tests with verbose output
+
+# Or using Go commands directly
+go test ./...              # Run all tests
+go test -cover ./...       # View test coverage
+go test -v ./...           # Detailed test output
+```
+
+**Test Categories:**
+- SQL parsing with various PostgreSQL features
+- Type mapping from PostgreSQL to Drizzle ORM
+- Foreign key relationship handling
+- Table dependency ordering
+- Naming convention transformations
+- Error handling and edge cases
+- File I/O operations
+- CLI argument validation
 
 ### Development Guidelines
 Please see [CLAUDE.md](CLAUDE.md) for detailed development guidelines, coding standards, and architectural decisions.

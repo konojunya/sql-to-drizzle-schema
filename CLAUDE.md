@@ -58,6 +58,52 @@ sql-to-drizzle-schema/
 
 ## Common Commands
 
+### Using Makefile (Recommended)
+
+```bash
+# Show all available commands
+make help
+
+# Development workflow
+make dev                    # Quick development cycle (format, test, build)
+make check                  # Run all checks (format, vet, lint, test)
+make ci                     # Run CI pipeline
+
+# Building
+make build                  # Build the binary
+make build-all             # Build for multiple platforms
+make install               # Install to GOPATH/bin
+
+# Testing
+make test                   # Run all tests
+make test-coverage         # Run tests with coverage
+make test-coverage-view    # Run tests with coverage and open in browser
+make test-verbose          # Run tests with verbose output
+make bench                 # Run benchmarks
+
+# Code quality
+make fmt                   # Format code
+make lint                  # Run linter (requires golangci-lint)
+make vet                   # Run go vet
+make security              # Run security scan (requires gosec)
+
+# Dependencies
+make deps                  # Download and verify dependencies
+make tidy                  # Tidy dependencies
+
+# Examples and debugging
+make example               # Build and run with example file
+make debug-example         # Run example with verbose output
+
+# Utilities
+make clean                 # Clean build artifacts
+make setup                 # Setup development environment
+make docs                  # Generate Go documentation
+make status                # Show project status
+```
+
+### Direct Go Commands
+
 ```bash
 # Build the project
 go build -o sql-to-drizzle-schema
@@ -85,9 +131,6 @@ go mod tidy
 
 # Download dependencies
 go mod download
-
-# Check for security vulnerabilities
-go list -json -m all | nancy sleuth
 
 # Generate documentation
 godoc -http=:6060
@@ -155,10 +198,16 @@ The project has reached a functional state with complete PostgreSQL support:
   - ✅ Automatic .references() generation for foreign key columns
   - ✅ Table dependency sorting for proper declaration order
   - ✅ Support for single-column foreign keys
+- ✅ Comprehensive test suite
+  - ✅ Unit tests for all internal packages (parser, generator, reader)
+  - ✅ Integration tests for end-to-end conversion
+  - ✅ Test coverage: reader (100%), parser (83.7%), generator (78.2%)
+  - ✅ Error handling and edge case testing
+  - ✅ Naming convention testing
+  - ✅ Foreign key dependency ordering tests
 - 🚧 MySQL parser (planned)
 - 🚧 Spanner parser (planned)
 - 🚧 Multi-column foreign keys (planned)
-- 🚧 Test suite (planned)
 
 ## Future Enhancements
 

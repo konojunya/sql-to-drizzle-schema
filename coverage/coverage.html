@@ -1,0 +1,1316 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>generator: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/konojunya/sql-to-drizzle-schema/internal/generator/generator.go (91.3%)</option>
+				
+				<option value="file1">github.com/konojunya/sql-to-drizzle-schema/internal/generator/postgres.go (76.4%)</option>
+				
+				<option value="file2">github.com/konojunya/sql-to-drizzle-schema/internal/generator/types.go (100.0%)</option>
+				
+				<option value="file3">github.com/konojunya/sql-to-drizzle-schema/internal/parser/parser.go (91.7%)</option>
+				
+				<option value="file4">github.com/konojunya/sql-to-drizzle-schema/internal/parser/postgres.go (83.1%)</option>
+				
+				<option value="file5">github.com/konojunya/sql-to-drizzle-schema/internal/reader/file.go (100.0%)</option>
+				
+				<option value="file6">github.com/konojunya/sql-to-drizzle-schema/main.go (3.3%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package generator
+
+import (
+        "fmt"
+        "os"
+
+        "github.com/konojunya/sql-to-drizzle-schema/internal/parser"
+)
+
+// NewSchemaGenerator creates a new schema generator for the specified dialect
+func NewSchemaGenerator(dialect parser.DatabaseDialect) (SchemaGenerator, error) <span class="cov8" title="1">{
+        switch dialect </span>{
+        case parser.PostgreSQL:<span class="cov8" title="1">
+                return NewPostgreSQLSchemaGenerator(), nil</span>
+        case parser.MySQL:<span class="cov8" title="1">
+                return nil, fmt.Errorf("MySQL schema generation is not yet implemented")</span>
+        case parser.Spanner:<span class="cov8" title="1">
+                return nil, fmt.Errorf("Spanner schema generation is not yet implemented")</span>
+        default:<span class="cov8" title="1">
+                return nil, fmt.Errorf("unsupported database dialect: %s", dialect)</span>
+        }
+}
+
+// GenerateSchemaToFile is a convenience function that generates schema and writes to file
+func GenerateSchemaToFile(tables []parser.Table, dialect parser.DatabaseDialect, outputFile string, options GeneratorOptions) error <span class="cov8" title="1">{
+        generator, err := NewSchemaGenerator(dialect)
+        if err != nil </span><span class="cov8" title="1">{
+                return fmt.Errorf("failed to create generator: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">schema, err := generator.GenerateSchema(tables, options)
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to generate schema: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">err = WriteSchemaToFile(schema.Content, outputFile)
+        if err != nil </span><span class="cov8" title="1">{
+                return fmt.Errorf("failed to write schema to file: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">return nil</span>
+}
+
+// WriteSchemaToFile writes the generated schema content to a file
+func WriteSchemaToFile(content, filename string) error <span class="cov8" title="1">{
+        file, err := os.Create(filename)
+        if err != nil </span><span class="cov8" title="1">{
+                return fmt.Errorf("failed to create file %s: %w", filename, err)
+        }</span>
+        <span class="cov8" title="1">defer file.Close()
+
+        _, err = file.WriteString(content)
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to write content to file %s: %w", filename, err)
+        }</span>
+
+        <span class="cov8" title="1">return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package generator
+
+import (
+        "fmt"
+        "strconv"
+        "strings"
+
+        "github.com/konojunya/sql-to-drizzle-schema/internal/parser"
+)
+
+// PostgreSQLTypeMapper implements type mapping for PostgreSQL to Drizzle ORM
+type PostgreSQLTypeMapper struct{}
+
+// NewPostgreSQLTypeMapper creates a new PostgreSQL type mapper
+func NewPostgreSQLTypeMapper() *PostgreSQLTypeMapper <span class="cov8" title="1">{
+        return &amp;PostgreSQLTypeMapper{}
+}</span>
+
+// SupportedDialect returns the database dialect this mapper supports
+func (m *PostgreSQLTypeMapper) SupportedDialect() parser.DatabaseDialect <span class="cov8" title="1">{
+        return parser.PostgreSQL
+}</span>
+
+// MapColumnType maps a PostgreSQL column to a Drizzle type definition
+func (m *PostgreSQLTypeMapper) MapColumnType(column parser.Column) (*DrizzleType, error) <span class="cov8" title="1">{
+        drizzleType := &amp;DrizzleType{
+                Function: "",
+                Args:     []string{},
+                Options:  []string{},
+        }
+
+        // Map SQL types to Drizzle types
+        switch strings.ToUpper(column.Type) </span>{
+        case "BIGSERIAL":<span class="cov8" title="1">
+                drizzleType.Function = "bigserial"
+                drizzleType.Args = []string{fmt.Sprintf("'%s'", column.Name), "{ mode: 'number' }"}</span>
+        case "SERIAL":<span class="cov0" title="0">
+                drizzleType.Function = "serial"
+                drizzleType.Args = []string{fmt.Sprintf("'%s'", column.Name)}</span>
+        case "SMALLSERIAL":<span class="cov0" title="0">
+                drizzleType.Function = "serial"
+                drizzleType.Args = []string{fmt.Sprintf("'%s'", column.Name)}</span>
+        case "BIGINT":<span class="cov8" title="1">
+                drizzleType.Function = "bigint"
+                drizzleType.Args = []string{fmt.Sprintf("'%s'", column.Name), "{ mode: 'number' }"}</span>
+        case "INTEGER", "INT", "INT4":<span class="cov0" title="0">
+                drizzleType.Function = "integer"
+                drizzleType.Args = []string{fmt.Sprintf("'%s'", column.Name)}</span>
+        case "SMALLINT", "INT2":<span class="cov0" title="0">
+                drizzleType.Function = "smallint"
+                drizzleType.Args = []string{fmt.Sprintf("'%s'", column.Name)}</span>
+        case "VARCHAR":<span class="cov8" title="1">
+                if column.Length != nil </span><span class="cov8" title="1">{
+                        drizzleType.Function = "varchar"
+                        drizzleType.Args = []string{fmt.Sprintf("'%s'", column.Name), fmt.Sprintf("{ length: %d }", *column.Length)}
+                }</span> else<span class="cov0" title="0"> {
+                        drizzleType.Function = "varchar"
+                        drizzleType.Args = []string{fmt.Sprintf("'%s'", column.Name)}
+                }</span>
+        case "TEXT":<span class="cov8" title="1">
+                drizzleType.Function = "text"
+                drizzleType.Args = []string{fmt.Sprintf("'%s'", column.Name)}</span>
+        case "BOOLEAN", "BOOL":<span class="cov8" title="1">
+                drizzleType.Function = "boolean"
+                drizzleType.Args = []string{fmt.Sprintf("'%s'", column.Name)}</span>
+        case "TIMESTAMP WITH TIME ZONE", "TIMESTAMPTZ":<span class="cov8" title="1">
+                drizzleType.Function = "timestamp"
+                drizzleType.Args = []string{fmt.Sprintf("'%s'", column.Name), "{ withTimezone: true }"}</span>
+        case "TIMESTAMP":<span class="cov0" title="0">
+                drizzleType.Function = "timestamp"
+                drizzleType.Args = []string{fmt.Sprintf("'%s'", column.Name)}</span>
+        case "DATE":<span class="cov0" title="0">
+                drizzleType.Function = "date"
+                drizzleType.Args = []string{fmt.Sprintf("'%s'", column.Name)}</span>
+        case "TIME":<span class="cov0" title="0">
+                drizzleType.Function = "time"
+                drizzleType.Args = []string{fmt.Sprintf("'%s'", column.Name)}</span>
+        case "DECIMAL", "NUMERIC":<span class="cov8" title="1">
+                if column.Length != nil &amp;&amp; column.Scale != nil </span><span class="cov8" title="1">{
+                        drizzleType.Function = "decimal"
+                        drizzleType.Args = []string{fmt.Sprintf("'%s'", column.Name), fmt.Sprintf("{ precision: %d, scale: %d }", *column.Length, *column.Scale)}
+                }</span> else<span class="cov0" title="0"> if column.Length != nil </span><span class="cov0" title="0">{
+                        drizzleType.Function = "decimal"
+                        drizzleType.Args = []string{fmt.Sprintf("'%s'", column.Name), fmt.Sprintf("{ precision: %d }", *column.Length)}
+                }</span> else<span class="cov0" title="0"> {
+                        drizzleType.Function = "decimal"
+                        drizzleType.Args = []string{fmt.Sprintf("'%s'", column.Name)}
+                }</span>
+        case "REAL", "FLOAT4":<span class="cov0" title="0">
+                drizzleType.Function = "real"
+                drizzleType.Args = []string{fmt.Sprintf("'%s'", column.Name)}</span>
+        case "DOUBLE PRECISION", "DOUBLE", "FLOAT8":<span class="cov0" title="0">
+                drizzleType.Function = "doublePrecision"
+                drizzleType.Args = []string{fmt.Sprintf("'%s'", column.Name)}</span>
+        case "UUID":<span class="cov0" title="0">
+                drizzleType.Function = "uuid"
+                drizzleType.Args = []string{fmt.Sprintf("'%s'", column.Name)}</span>
+        case "JSON":<span class="cov0" title="0">
+                drizzleType.Function = "json"
+                drizzleType.Args = []string{fmt.Sprintf("'%s'", column.Name)}</span>
+        case "JSONB":<span class="cov0" title="0">
+                drizzleType.Function = "jsonb"
+                drizzleType.Args = []string{fmt.Sprintf("'%s'", column.Name)}</span>
+        default:<span class="cov0" title="0">
+                // Fallback to text for unknown types
+                drizzleType.Function = "text"
+                drizzleType.Args = []string{fmt.Sprintf("'%s'", column.Name)}</span>
+        }
+
+        // Add constraints as method chains
+        <span class="cov8" title="1">if column.NotNull </span><span class="cov8" title="1">{
+                drizzleType.Options = append(drizzleType.Options, "notNull()")
+        }</span>
+
+        <span class="cov8" title="1">if column.Unique </span><span class="cov8" title="1">{
+                drizzleType.Options = append(drizzleType.Options, "unique()")
+        }</span>
+
+        // Handle default values
+        <span class="cov8" title="1">if column.DefaultValue != nil </span><span class="cov8" title="1">{
+                defaultVal := *column.DefaultValue
+                switch strings.ToUpper(defaultVal) </span>{
+                case "CURRENT_TIMESTAMP", "NOW()":<span class="cov8" title="1">
+                        if strings.Contains(strings.ToUpper(column.Type), "TIMESTAMP") </span><span class="cov8" title="1">{
+                                drizzleType.Options = append(drizzleType.Options, "defaultNow()")
+                        }</span>
+                case "TRUE":<span class="cov8" title="1">
+                        drizzleType.Options = append(drizzleType.Options, "default(true)")</span>
+                case "FALSE":<span class="cov0" title="0">
+                        drizzleType.Options = append(drizzleType.Options, "default(false)")</span>
+                default:<span class="cov8" title="1">
+                        // For string literals, keep quotes; for numbers, don't quote
+                        if strings.HasPrefix(defaultVal, "'") &amp;&amp; strings.HasSuffix(defaultVal, "'") </span><span class="cov8" title="1">{
+                                drizzleType.Options = append(drizzleType.Options, fmt.Sprintf("default(%s)", defaultVal))
+                        }</span> else<span class="cov0" title="0"> if _, err := strconv.Atoi(defaultVal); err == nil </span><span class="cov0" title="0">{
+                                // It's a number
+                                drizzleType.Options = append(drizzleType.Options, fmt.Sprintf("default(%s)", defaultVal))
+                        }</span> else<span class="cov0" title="0"> {
+                                // Treat as string literal
+                                drizzleType.Options = append(drizzleType.Options, fmt.Sprintf("default('%s')", defaultVal))
+                        }</span>
+                }
+        }
+
+        <span class="cov8" title="1">return drizzleType, nil</span>
+}
+
+// PostgreSQLSchemaGenerator implements schema generation for PostgreSQL
+type PostgreSQLSchemaGenerator struct {
+        typeMapper *PostgreSQLTypeMapper
+}
+
+// NewPostgreSQLSchemaGenerator creates a new PostgreSQL schema generator
+func NewPostgreSQLSchemaGenerator() *PostgreSQLSchemaGenerator <span class="cov8" title="1">{
+        return &amp;PostgreSQLSchemaGenerator{
+                typeMapper: NewPostgreSQLTypeMapper(),
+        }
+}</span>
+
+// SupportedDialect returns the database dialect this generator supports
+func (g *PostgreSQLSchemaGenerator) SupportedDialect() parser.DatabaseDialect <span class="cov8" title="1">{
+        return parser.PostgreSQL
+}</span>
+
+// GenerateSchema generates a complete Drizzle schema from parsed tables
+func (g *PostgreSQLSchemaGenerator) GenerateSchema(tables []parser.Table, options GeneratorOptions) (*GeneratedSchema, error) <span class="cov8" title="1">{
+        schema := &amp;GeneratedSchema{
+                Imports: []string{},
+                Tables:  []GeneratedTable{},
+        }
+
+        // Collect required imports
+        importSet := make(map[string]bool)
+        importSet["pgTable"] = true // Always need pgTable
+
+        // First pass: collect all required imports
+        for _, table := range tables </span><span class="cov8" title="1">{
+                for _, column := range table.Columns </span><span class="cov8" title="1">{
+                        drizzleType, err := g.typeMapper.MapColumnType(column)
+                        if err != nil </span><span class="cov0" title="0">{
+                                return nil, fmt.Errorf("failed to map column %s.%s: %w", table.Name, column.Name, err)
+                        }</span>
+                        <span class="cov8" title="1">importSet[drizzleType.Function] = true</span>
+                }
+        }
+
+        // Generate import statement
+        <span class="cov8" title="1">var importList []string
+        for imp := range importSet </span><span class="cov8" title="1">{
+                importList = append(importList, imp)
+        }</span>
+
+        // Sort imports for consistency (basic alphabetical)
+        <span class="cov8" title="1">for i := 0; i &lt; len(importList); i++ </span><span class="cov8" title="1">{
+                for j := i + 1; j &lt; len(importList); j++ </span><span class="cov8" title="1">{
+                        if importList[i] &gt; importList[j] </span><span class="cov8" title="1">{
+                                importList[i], importList[j] = importList[j], importList[i]
+                        }</span>
+                }
+        }
+
+        <span class="cov8" title="1">schema.Imports = []string{fmt.Sprintf("import { %s } from 'drizzle-orm/pg-core';", strings.Join(importList, ", "))}
+
+        // Sort tables to handle foreign key dependencies
+        // Tables without foreign keys first, then tables with foreign keys
+        sortedTables := g.sortTablesByDependencies(tables)
+
+        // Generate table definitions in dependency order
+        for _, table := range sortedTables </span><span class="cov8" title="1">{
+                generatedTable, err := g.GenerateTable(table, options)
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, fmt.Errorf("failed to generate table %s: %w", table.Name, err)
+                }</span>
+                <span class="cov8" title="1">schema.Tables = append(schema.Tables, *generatedTable)</span>
+        }
+
+        // Build complete content
+        <span class="cov8" title="1">var contentBuilder strings.Builder
+
+        // Add imports
+        for _, imp := range schema.Imports </span><span class="cov8" title="1">{
+                contentBuilder.WriteString(imp)
+                contentBuilder.WriteString("\n")
+        }</span>
+        <span class="cov8" title="1">contentBuilder.WriteString("\n")
+
+        // Add table definitions
+        for i, table := range schema.Tables </span><span class="cov8" title="1">{
+                if i &gt; 0 </span><span class="cov8" title="1">{
+                        contentBuilder.WriteString("\n")
+                }</span>
+                <span class="cov8" title="1">contentBuilder.WriteString(table.Definition)
+                contentBuilder.WriteString("\n")</span>
+        }
+
+        <span class="cov8" title="1">schema.Content = contentBuilder.String()
+        return schema, nil</span>
+}
+
+// sortTablesByDependencies sorts tables so that referenced tables come before referencing tables
+func (g *PostgreSQLSchemaGenerator) sortTablesByDependencies(tables []parser.Table) []parser.Table <span class="cov8" title="1">{
+        // Create a map for quick lookup
+        tableMap := make(map[string]parser.Table)
+        for _, table := range tables </span><span class="cov8" title="1">{
+                tableMap[table.Name] = table
+        }</span>
+
+        // Simple topological sort
+        <span class="cov8" title="1">visited := make(map[string]bool)
+        visiting := make(map[string]bool)
+        sorted := []parser.Table{}
+
+        var visit func(tableName string)
+        visit = func(tableName string) </span><span class="cov8" title="1">{
+                if visited[tableName] || visiting[tableName] </span><span class="cov8" title="1">{
+                        return
+                }</span>
+
+                <span class="cov8" title="1">visiting[tableName] = true
+                table := tableMap[tableName]
+
+                // Visit all dependencies (referenced tables) first
+                for _, fk := range table.ForeignKeys </span><span class="cov8" title="1">{
+                        if _, exists := tableMap[fk.ReferencedTable]; exists </span><span class="cov8" title="1">{
+                                visit(fk.ReferencedTable)
+                        }</span>
+                }
+
+                <span class="cov8" title="1">visiting[tableName] = false
+                visited[tableName] = true
+                sorted = append(sorted, table)</span>
+        }
+
+        // Visit all tables
+        <span class="cov8" title="1">for _, table := range tables </span><span class="cov8" title="1">{
+                visit(table.Name)
+        }</span>
+
+        <span class="cov8" title="1">return sorted</span>
+}
+
+// GenerateTable generates a single table definition
+func (g *PostgreSQLSchemaGenerator) GenerateTable(table parser.Table, options GeneratorOptions) (*GeneratedTable, error) <span class="cov8" title="1">{
+        exportName := g.convertCase(table.Name, options.TableNameCase)
+
+        var builder strings.Builder
+        indent := strings.Repeat(" ", options.IndentSize)
+
+        // Add comment if enabled
+        if options.IncludeComments </span><span class="cov8" title="1">{
+                builder.WriteString(fmt.Sprintf("// %s table\n", table.Name))
+        }</span>
+
+        // Start table definition
+        <span class="cov8" title="1">builder.WriteString(fmt.Sprintf("export const %s%s = pgTable('%s', {\n", options.ExportPrefix, exportName, table.Name))
+
+        // Generate columns
+        for i, column := range table.Columns </span><span class="cov8" title="1">{
+                drizzleType, err := g.typeMapper.MapColumnType(column)
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, fmt.Errorf("failed to map column %s: %w", column.Name, err)
+                }</span>
+
+                <span class="cov8" title="1">columnName := g.convertCase(column.Name, options.ColumnNameCase)
+
+                // Build column definition
+                builder.WriteString(fmt.Sprintf("%s%s: %s(%s)", indent, columnName, drizzleType.Function, strings.Join(drizzleType.Args, ", ")))
+
+                // Add method chains
+                for _, option := range drizzleType.Options </span><span class="cov8" title="1">{
+                        builder.WriteString(fmt.Sprintf(".%s", option))
+                }</span>
+
+                // Add primary key if this column is in the primary key
+                <span class="cov8" title="1">for _, pkCol := range table.PrimaryKey </span><span class="cov8" title="1">{
+                        if pkCol == column.Name </span><span class="cov8" title="1">{
+                                builder.WriteString(".primaryKey()")
+                                break</span>
+                        }
+                }
+
+                // Add foreign key reference if this column has one
+                <span class="cov8" title="1">for _, fk := range table.ForeignKeys </span><span class="cov8" title="1">{
+                        // Check if this column is part of a foreign key (support single-column FKs for now)
+                        if len(fk.Columns) == 1 &amp;&amp; fk.Columns[0] == column.Name </span><span class="cov8" title="1">{
+                                referencedTableName := g.convertCase(fk.ReferencedTable, options.TableNameCase)
+                                if len(fk.ReferencedColumns) == 1 </span><span class="cov8" title="1">{
+                                        referencedColumnName := g.convertCase(fk.ReferencedColumns[0], options.ColumnNameCase)
+                                        builder.WriteString(fmt.Sprintf(".references(() =&gt; %s.%s)", referencedTableName, referencedColumnName))
+                                }</span>
+                                <span class="cov8" title="1">break</span>
+                        }
+                }
+
+                // Add comma except for last column
+                <span class="cov8" title="1">if i &lt; len(table.Columns)-1 </span><span class="cov8" title="1">{
+                        builder.WriteString(",")
+                }</span>
+                <span class="cov8" title="1">builder.WriteString("\n")</span>
+        }
+
+        <span class="cov8" title="1">builder.WriteString("});")
+
+        return &amp;GeneratedTable{
+                OriginalName: table.Name,
+                ExportName:   exportName,
+                Definition:   builder.String(),
+        }, nil</span>
+}
+
+// convertCase converts a string to the specified naming case
+func (g *PostgreSQLSchemaGenerator) convertCase(input string, caseType NamingCase) string <span class="cov8" title="1">{
+        switch caseType </span>{
+        case CamelCase:<span class="cov8" title="1">
+                return g.toCamelCase(input)</span>
+        case PascalCase:<span class="cov8" title="1">
+                return g.toPascalCase(input)</span>
+        case SnakeCase:<span class="cov8" title="1">
+                return input</span> // Keep as-is
+        case KebabCase:<span class="cov8" title="1">
+                return strings.ReplaceAll(input, "_", "-")</span>
+        default:<span class="cov0" title="0">
+                return input</span>
+        }
+}
+
+// toCamelCase converts snake_case to camelCase
+func (g *PostgreSQLSchemaGenerator) toCamelCase(input string) string <span class="cov8" title="1">{
+        words := strings.Split(input, "_")
+        if len(words) == 0 </span><span class="cov0" title="0">{
+                return input
+        }</span>
+
+        <span class="cov8" title="1">result := words[0]
+        for i := 1; i &lt; len(words); i++ </span><span class="cov8" title="1">{
+                if len(words[i]) &gt; 0 </span><span class="cov8" title="1">{
+                        result += strings.ToUpper(words[i][:1]) + words[i][1:]
+                }</span>
+        }
+        <span class="cov8" title="1">return result</span>
+}
+
+// toPascalCase converts snake_case to PascalCase
+func (g *PostgreSQLSchemaGenerator) toPascalCase(input string) string <span class="cov8" title="1">{
+        words := strings.Split(input, "_")
+        var result string
+
+        for _, word := range words </span><span class="cov8" title="1">{
+                if len(word) &gt; 0 </span><span class="cov8" title="1">{
+                        result += strings.ToUpper(word[:1]) + word[1:]
+                }</span>
+        }
+        <span class="cov8" title="1">return result</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">// Package generator provides functionality to generate Drizzle ORM schema definitions
+// from parsed SQL table structures.
+//
+// This package converts the parsed SQL structures into TypeScript code that uses
+// Drizzle ORM syntax for different database dialects.
+package generator
+
+import "github.com/konojunya/sql-to-drizzle-schema/internal/parser"
+
+// GeneratorOptions contains options for schema generation
+type GeneratorOptions struct {
+        // TableNameCase specifies the naming convention for table exports
+        TableNameCase NamingCase
+        // ColumnNameCase specifies the naming convention for column names
+        ColumnNameCase NamingCase
+        // IncludeComments includes comments in the generated schema
+        IncludeComments bool
+        // ExportPrefix adds a prefix to exported table names
+        ExportPrefix string
+        // IndentSize specifies the number of spaces for indentation
+        IndentSize int
+}
+
+// NamingCase represents different naming conventions
+type NamingCase string
+
+const (
+        // CamelCase converts to camelCase (userProfiles)
+        CamelCase NamingCase = "camel"
+        // PascalCase converts to PascalCase (UserProfiles)
+        PascalCase NamingCase = "pascal"
+        // SnakeCase keeps snake_case (user_profiles)
+        SnakeCase NamingCase = "snake"
+        // KebabCase converts to kebab-case (user-profiles)
+        KebabCase NamingCase = "kebab"
+)
+
+// GeneratedSchema represents the complete generated schema
+type GeneratedSchema struct {
+        // Imports contains the import statements needed for the schema
+        Imports []string
+        // Tables contains the generated table definitions
+        Tables []GeneratedTable
+        // Content contains the complete generated TypeScript content
+        Content string
+}
+
+// GeneratedTable represents a single generated table definition
+type GeneratedTable struct {
+        // OriginalName is the original SQL table name
+        OriginalName string
+        // ExportName is the exported TypeScript variable name
+        ExportName string
+        // Definition contains the table definition code
+        Definition string
+}
+
+// DrizzleType represents a Drizzle ORM column type
+type DrizzleType struct {
+        // Function is the Drizzle function name (e.g., "varchar", "bigserial")
+        Function string
+        // Args contains arguments for the function
+        Args []string
+        // Options contains method chain options (e.g., ".notNull()", ".default()")
+        Options []string
+}
+
+// SchemaGenerator interface defines the contract for schema generation
+type SchemaGenerator interface {
+        // GenerateSchema generates a complete Drizzle schema from parsed tables
+        GenerateSchema(tables []parser.Table, options GeneratorOptions) (*GeneratedSchema, error)
+
+        // GenerateTable generates a single table definition
+        GenerateTable(table parser.Table, options GeneratorOptions) (*GeneratedTable, error)
+
+        // SupportedDialect returns the database dialect this generator supports
+        SupportedDialect() parser.DatabaseDialect
+}
+
+// ColumnTypeMapper interface defines the contract for mapping SQL types to Drizzle types
+type ColumnTypeMapper interface {
+        // MapColumnType maps a SQL column to a Drizzle type definition
+        MapColumnType(column parser.Column) (*DrizzleType, error)
+
+        // SupportedDialect returns the database dialect this mapper supports
+        SupportedDialect() parser.DatabaseDialect
+}
+
+// DefaultGeneratorOptions returns sensible default options for schema generation
+func DefaultGeneratorOptions() GeneratorOptions <span class="cov8" title="1">{
+        return GeneratorOptions{
+                TableNameCase:   CamelCase,
+                ColumnNameCase:  CamelCase,
+                IncludeComments: true,
+                ExportPrefix:    "",
+                IndentSize:      2,
+        }
+}</span>
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package parser
+
+import "fmt"
+
+// NewParser creates a new SQL parser for the specified dialect
+func NewParser(dialect DatabaseDialect) (SQLParser, error) <span class="cov8" title="1">{
+        switch dialect </span>{
+        case PostgreSQL:<span class="cov8" title="1">
+                return NewPostgreSQLParser(), nil</span>
+        case MySQL:<span class="cov8" title="1">
+                return nil, fmt.Errorf("MySQL dialect support is not yet implemented")</span>
+        case Spanner:<span class="cov8" title="1">
+                return nil, fmt.Errorf("Spanner dialect support is not yet implemented")</span>
+        default:<span class="cov8" title="1">
+                return nil, fmt.Errorf("unsupported database dialect: %s", dialect)</span>
+        }
+}
+
+// ParseSQLContent is a convenience function that creates a parser and parses SQL content
+func ParseSQLContent(content string, dialect DatabaseDialect, options ParseOptions) (*ParseResult, error) <span class="cov8" title="1">{
+        parser, err := NewParser(dialect)
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+
+        // Set the dialect in options if not already set
+        <span class="cov8" title="1">if options.Dialect == "" </span><span class="cov0" title="0">{
+                options.Dialect = dialect
+        }</span>
+
+        <span class="cov8" title="1">return parser.ParseSQL(content, options)</span>
+}
+
+// DefaultParseOptions returns sensible default options for parsing
+func DefaultParseOptions() ParseOptions <span class="cov8" title="1">{
+        return ParseOptions{
+                Dialect:           PostgreSQL,
+                StrictMode:        false,
+                IgnoreUnsupported: true,
+        }
+}</span>
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package parser
+
+import (
+        "fmt"
+        "regexp"
+        "strconv"
+        "strings"
+)
+
+// PostgreSQLParser implements SQL parsing for PostgreSQL dialect
+type PostgreSQLParser struct{}
+
+// NewPostgreSQLParser creates a new PostgreSQL parser
+func NewPostgreSQLParser() *PostgreSQLParser <span class="cov8" title="1">{
+        return &amp;PostgreSQLParser{}
+}</span>
+
+// SupportedDialect returns the SQL dialect this parser supports
+func (p *PostgreSQLParser) SupportedDialect() DatabaseDialect <span class="cov8" title="1">{
+        return PostgreSQL
+}</span>
+
+// ParseSQL parses PostgreSQL SQL content and returns structured table definitions
+func (p *PostgreSQLParser) ParseSQL(content string, options ParseOptions) (*ParseResult, error) <span class="cov8" title="1">{
+        result := &amp;ParseResult{
+                Tables:  []Table{},
+                Dialect: PostgreSQL,
+                Errors:  []error{},
+        }
+
+        // Split content into individual statements
+        statements := p.splitStatements(content)
+
+        for _, stmtStr := range statements </span><span class="cov8" title="1">{
+                // Skip empty statements and comments
+                stmtStr = strings.TrimSpace(stmtStr)
+                if stmtStr == "" </span><span class="cov0" title="0">{
+                        continue</span>
+                }
+
+                // Remove leading comments but keep the rest
+                <span class="cov8" title="1">lines := strings.Split(stmtStr, "\n")
+                var cleanLines []string
+                for _, line := range lines </span><span class="cov8" title="1">{
+                        trimmedLine := strings.TrimSpace(line)
+                        if !strings.HasPrefix(trimmedLine, "--") &amp;&amp; trimmedLine != "" </span><span class="cov8" title="1">{
+                                cleanLines = append(cleanLines, line)
+                        }</span>
+                }
+
+                <span class="cov8" title="1">if len(cleanLines) == 0 </span><span class="cov8" title="1">{
+                        continue</span>
+                }
+
+                <span class="cov8" title="1">stmtStr = strings.Join(cleanLines, "\n")
+
+                // Use regex-based parsing for CREATE TABLE statements
+                if p.isCreateTableStatement(stmtStr) </span><span class="cov8" title="1">{
+                        table, err := p.parseCreateTableRegex(stmtStr, options)
+                        if err != nil </span><span class="cov0" title="0">{
+                                if options.IgnoreUnsupported </span><span class="cov0" title="0">{
+                                        result.Errors = append(result.Errors, err)
+                                        continue</span>
+                                }
+                                <span class="cov0" title="0">return nil, err</span>
+                        }
+                        <span class="cov8" title="1">if table != nil </span><span class="cov8" title="1">{
+                                result.Tables = append(result.Tables, *table)
+                        }</span>
+                }
+        }
+
+        <span class="cov8" title="1">return result, nil</span>
+}
+
+// isCreateTableStatement checks if a statement is a CREATE TABLE statement
+func (p *PostgreSQLParser) isCreateTableStatement(stmt string) bool <span class="cov8" title="1">{
+        // Simple regex to match CREATE TABLE statements
+        createTableRegex := regexp.MustCompile(`(?i)^\s*CREATE\s+TABLE\s+`)
+        return createTableRegex.MatchString(stmt)
+}</span>
+
+// parseCreateTableRegex parses a CREATE TABLE statement using regex
+func (p *PostgreSQLParser) parseCreateTableRegex(stmt string, options ParseOptions) (*Table, error) <span class="cov8" title="1">{
+        // Extract table name
+        tableNameRegex := regexp.MustCompile(`(?i)CREATE\s+TABLE\s+(\w+)\s*\(`)
+        matches := tableNameRegex.FindStringSubmatch(stmt)
+        if len(matches) &lt; 2 </span><span class="cov8" title="1">{
+                return nil, fmt.Errorf("could not extract table name from statement")
+        }</span>
+
+        <span class="cov8" title="1">table := &amp;Table{
+                Name:        matches[1],
+                Columns:     []Column{},
+                PrimaryKey:  []string{},
+                ForeignKeys: []ForeignKey{},
+                Indexes:     []Index{},
+                Constraints: []Constraint{},
+        }
+
+        // Extract table body (everything between the first ( and last ))
+        // Use DOTALL flag to match across newlines
+        bodyRegex := regexp.MustCompile(`(?is)CREATE\s+TABLE\s+\w+\s*\((.*)\);?\s*$`)
+        bodyMatches := bodyRegex.FindStringSubmatch(stmt)
+        if len(bodyMatches) &lt; 2 </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("could not extract table body from statement")
+        }</span>
+
+        <span class="cov8" title="1">tableBody := bodyMatches[1]
+
+        // Parse columns and constraints
+        err := p.parseTableBody(table, tableBody, options)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("failed to parse table body: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">return table, nil</span>
+}
+
+// parseTableBody parses the table body containing columns and constraints
+func (p *PostgreSQLParser) parseTableBody(table *Table, body string, options ParseOptions) error <span class="cov8" title="1">{
+        // Split by commas, but be careful about parentheses and strings
+        items := p.splitTableItems(body)
+
+        for _, item := range items </span><span class="cov8" title="1">{
+                item = strings.TrimSpace(item)
+                if item == "" </span><span class="cov0" title="0">{
+                        continue</span>
+                }
+
+                // Check if it's a constraint
+                <span class="cov8" title="1">if p.isConstraint(item) </span><span class="cov8" title="1">{
+                        err := p.parseConstraint(table, item, options)
+                        if err != nil &amp;&amp; !options.IgnoreUnsupported </span><span class="cov0" title="0">{
+                                return err
+                        }</span>
+                } else<span class="cov8" title="1"> {
+                        // It's a column definition
+                        column, err := p.parseColumnRegex(item, options)
+                        if err != nil </span><span class="cov0" title="0">{
+                                if options.IgnoreUnsupported </span><span class="cov0" title="0">{
+                                        continue</span>
+                                }
+                                <span class="cov0" title="0">return err</span>
+                        }
+                        <span class="cov8" title="1">table.Columns = append(table.Columns, *column)</span>
+                }
+        }
+
+        <span class="cov8" title="1">return nil</span>
+}
+
+// parseColumnRegex parses a column definition using regex
+func (p *PostgreSQLParser) parseColumnRegex(columnDef string, options ParseOptions) (*Column, error) <span class="cov8" title="1">{
+        // Basic column regex: name type [constraints...]
+        // Allow more flexible type matching including WITH TIME ZONE
+        columnRegex := regexp.MustCompile(`(?i)^\s*(\w+)\s+((?:[A-Z]+(?:\([^)]*\))?(?:\s+WITH\s+TIME\s+ZONE)?)+)\s*(.*)$`)
+        matches := columnRegex.FindStringSubmatch(columnDef)
+
+        if len(matches) &lt; 3 </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("could not parse column definition: %s", columnDef)
+        }</span>
+
+        <span class="cov8" title="1">column := &amp;Column{
+                Name:          matches[1],
+                Type:          strings.ToUpper(strings.TrimSpace(matches[2])),
+                NotNull:       false,
+                Unique:        false,
+                AutoIncrement: false,
+        }
+
+        // Parse type with length
+        if strings.Contains(column.Type, "(") </span><span class="cov8" title="1">{
+                typeRegex := regexp.MustCompile(`([A-Z]+)\((\d+)(?:,\s*(\d+))?\)`)
+                typeMatches := typeRegex.FindStringSubmatch(column.Type)
+                if len(typeMatches) &gt;= 3 </span><span class="cov8" title="1">{
+                        column.Type = typeMatches[1]
+                        if length, err := strconv.Atoi(typeMatches[2]); err == nil </span><span class="cov8" title="1">{
+                                column.Length = &amp;length
+                        }</span>
+                        <span class="cov8" title="1">if len(typeMatches) &gt;= 4 &amp;&amp; typeMatches[3] != "" </span><span class="cov8" title="1">{
+                                if scale, err := strconv.Atoi(typeMatches[3]); err == nil </span><span class="cov8" title="1">{
+                                        column.Scale = &amp;scale
+                                }</span>
+                        }
+                }
+        }
+
+        // Handle PostgreSQL specific types
+        <span class="cov8" title="1">switch column.Type </span>{
+        case "BIGSERIAL":<span class="cov8" title="1">
+                column.AutoIncrement = true</span>
+        case "SERIAL":<span class="cov0" title="0">
+                column.AutoIncrement = true</span>
+        case "SMALLSERIAL":<span class="cov0" title="0">
+                column.AutoIncrement = true</span>
+        }
+
+        // Parse constraints
+        <span class="cov8" title="1">if len(matches) &gt; 3 </span><span class="cov8" title="1">{
+                constraints := strings.ToUpper(matches[3])
+
+                if strings.Contains(constraints, "NOT NULL") </span><span class="cov8" title="1">{
+                        column.NotNull = true
+                }</span>
+                <span class="cov8" title="1">if strings.Contains(constraints, "UNIQUE") </span><span class="cov8" title="1">{
+                        column.Unique = true
+                }</span>
+
+                // Parse DEFAULT value
+                <span class="cov8" title="1">defaultRegex := regexp.MustCompile(`(?i)DEFAULT\s+([^,\s]+(?:\s+[^,\s]+)*)`)
+                defaultMatches := defaultRegex.FindStringSubmatch(matches[3])
+                if len(defaultMatches) &gt;= 2 </span><span class="cov8" title="1">{
+                        defaultVal := strings.TrimSpace(defaultMatches[1])
+                        column.DefaultValue = &amp;defaultVal
+                }</span>
+        }
+
+        <span class="cov8" title="1">return column, nil</span>
+}
+
+// isConstraint checks if an item is a constraint definition
+func (p *PostgreSQLParser) isConstraint(item string) bool <span class="cov8" title="1">{
+        constraintKeywords := []string{"CONSTRAINT", "PRIMARY KEY", "FOREIGN KEY", "CHECK", "UNIQUE"}
+        itemUpper := strings.ToUpper(strings.TrimSpace(item))
+
+        for _, keyword := range constraintKeywords </span><span class="cov8" title="1">{
+                if strings.HasPrefix(itemUpper, keyword) </span><span class="cov8" title="1">{
+                        return true
+                }</span>
+        }
+        <span class="cov8" title="1">return false</span>
+}
+
+// parseConstraint parses a constraint definition
+func (p *PostgreSQLParser) parseConstraint(table *Table, constraintDef string, options ParseOptions) error <span class="cov8" title="1">{
+        constraintUpper := strings.ToUpper(strings.TrimSpace(constraintDef))
+
+        // Parse PRIMARY KEY
+        if strings.Contains(constraintUpper, "PRIMARY KEY") </span><span class="cov8" title="1">{
+                pkRegex := regexp.MustCompile(`(?i)(?:CONSTRAINT\s+\w+\s+)?PRIMARY\s+KEY\s*\(([^)]+)\)`)
+                matches := pkRegex.FindStringSubmatch(constraintDef)
+                if len(matches) &gt;= 2 </span><span class="cov8" title="1">{
+                        columns := strings.Split(matches[1], ",")
+                        for _, col := range columns </span><span class="cov8" title="1">{
+                                table.PrimaryKey = append(table.PrimaryKey, strings.TrimSpace(col))
+                        }</span>
+                }
+                <span class="cov8" title="1">return nil</span>
+        }
+
+        // Parse FOREIGN KEY
+        <span class="cov8" title="1">if strings.Contains(constraintUpper, "FOREIGN KEY") </span><span class="cov8" title="1">{
+                fkRegex := regexp.MustCompile(`(?i)CONSTRAINT\s+(\w+)\s+FOREIGN\s+KEY\s*\(([^)]+)\)\s+REFERENCES\s+(\w+)\s*\(([^)]+)\)`)
+                matches := fkRegex.FindStringSubmatch(constraintDef)
+                if len(matches) &gt;= 5 </span><span class="cov8" title="1">{
+                        fk := ForeignKey{
+                                Name:              matches[1],
+                                Columns:           strings.Split(strings.ReplaceAll(matches[2], " ", ""), ","),
+                                ReferencedTable:   matches[3],
+                                ReferencedColumns: strings.Split(strings.ReplaceAll(matches[4], " ", ""), ","),
+                        }
+                        table.ForeignKeys = append(table.ForeignKeys, fk)
+                }</span>
+                <span class="cov8" title="1">return nil</span>
+        }
+
+        // For now, ignore other constraints
+        <span class="cov0" title="0">if options.IgnoreUnsupported </span><span class="cov0" title="0">{
+                return nil
+        }</span>
+
+        <span class="cov0" title="0">return fmt.Errorf("unsupported constraint: %s", constraintDef)</span>
+}
+
+// splitTableItems splits table body into individual items (columns and constraints)
+func (p *PostgreSQLParser) splitTableItems(body string) []string <span class="cov8" title="1">{
+        items := []string{}
+        current := ""
+        parenDepth := 0
+        inString := false
+        stringChar := byte(0)
+
+        for i := 0; i &lt; len(body); i++ </span><span class="cov8" title="1">{
+                char := body[i]
+
+                if !inString </span><span class="cov8" title="1">{
+                        if char == '\'' || char == '"' </span><span class="cov0" title="0">{
+                                inString = true
+                                stringChar = char
+                        }</span> else<span class="cov8" title="1"> if char == '(' </span><span class="cov8" title="1">{
+                                parenDepth++
+                        }</span> else<span class="cov8" title="1"> if char == ')' </span><span class="cov8" title="1">{
+                                parenDepth--
+                        }</span> else<span class="cov8" title="1"> if char == ',' &amp;&amp; parenDepth == 0 </span><span class="cov8" title="1">{
+                                if strings.TrimSpace(current) != "" </span><span class="cov8" title="1">{
+                                        items = append(items, strings.TrimSpace(current))
+                                }</span>
+                                <span class="cov8" title="1">current = ""
+                                continue</span>
+                        }
+                } else<span class="cov0" title="0"> {
+                        if char == stringChar &amp;&amp; (i == 0 || body[i-1] != '\\') </span><span class="cov0" title="0">{
+                                inString = false
+                                stringChar = 0
+                        }</span>
+                }
+
+                <span class="cov8" title="1">current += string(char)</span>
+        }
+
+        // Add the last item
+        <span class="cov8" title="1">if strings.TrimSpace(current) != "" </span><span class="cov8" title="1">{
+                items = append(items, strings.TrimSpace(current))
+        }</span>
+
+        <span class="cov8" title="1">return items</span>
+}
+
+// splitStatements splits SQL content into individual statements
+// This is a simple implementation that splits on semicolons
+func (p *PostgreSQLParser) splitStatements(content string) []string <span class="cov8" title="1">{
+        // Remove SQL comments (-- style)
+        commentRegex := regexp.MustCompile(`--.*$`)
+        content = commentRegex.ReplaceAllString(content, "")
+
+        // Split on semicolons, but be careful about semicolons in strings
+        statements := []string{}
+        current := ""
+        inString := false
+        stringChar := byte(0)
+
+        for i := 0; i &lt; len(content); i++ </span><span class="cov8" title="1">{
+                char := content[i]
+
+                if !inString </span><span class="cov8" title="1">{
+                        if char == '\'' || char == '"' </span><span class="cov0" title="0">{
+                                inString = true
+                                stringChar = char
+                        }</span> else<span class="cov8" title="1"> if char == ';' </span><span class="cov8" title="1">{
+                                if strings.TrimSpace(current) != "" </span><span class="cov8" title="1">{
+                                        statements = append(statements, current)
+                                }</span>
+                                <span class="cov8" title="1">current = ""
+                                continue</span>
+                        }
+                } else<span class="cov0" title="0"> {
+                        if char == stringChar &amp;&amp; (i == 0 || content[i-1] != '\\') </span><span class="cov0" title="0">{
+                                inString = false
+                                stringChar = 0
+                        }</span>
+                }
+
+                <span class="cov8" title="1">current += string(char)</span>
+        }
+
+        // Add the last statement if it doesn't end with semicolon
+        <span class="cov8" title="1">if strings.TrimSpace(current) != "" </span><span class="cov8" title="1">{
+                statements = append(statements, current)
+        }</span>
+
+        <span class="cov8" title="1">return statements</span>
+}
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">// Package reader provides file reading utilities for SQL files.
+//
+// This package handles the reading and basic validation of SQL files
+// that will be converted to Drizzle ORM schema definitions.
+package reader
+
+import (
+        "fmt"
+        "io"
+        "os"
+)
+
+// ReadSQLFile reads the content of a SQL file and returns it as a string.
+//
+// This function opens the specified file, reads its entire content into memory,
+// and returns it as a string. It includes proper error handling for file
+// operations and uses wrapped errors for better error reporting.
+//
+// Parameters:
+//   - filename: The path to the SQL file to read. Can be relative or absolute.
+//
+// Returns:
+//   - string: The complete content of the SQL file
+//   - error: An error if the file cannot be opened or read
+//
+// Example usage:
+//
+//        content, err := reader.ReadSQLFile("./schema.sql")
+//        if err != nil {
+//            log.Fatal(err)
+//        }
+//        fmt.Println(content)
+//
+// Error handling:
+//   - Returns wrapped errors for better debugging
+//   - Distinguishes between file opening errors and reading errors
+//   - Automatically closes the file using defer
+func ReadSQLFile(filename string) (string, error) <span class="cov8" title="1">{
+        // Open the file for reading
+        file, err := os.Open(filename)
+        if err != nil </span><span class="cov8" title="1">{
+                // Wrap the error with context about which file failed to open
+                return "", fmt.Errorf("failed to open file %s: %w", filename, err)
+        }</span>
+        // Ensure the file is closed when the function returns
+        <span class="cov8" title="1">defer file.Close()
+
+        // Read the entire file content into memory
+        content, err := io.ReadAll(file)
+        if err != nil </span><span class="cov8" title="1">{
+                // Wrap the error with context about which file failed to read
+                return "", fmt.Errorf("failed to read file %s: %w", filename, err)
+        }</span>
+
+        // Convert byte slice to string and return
+        <span class="cov8" title="1">return string(content), nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file6" style="display: none">// Package main provides the CLI interface for sql-to-drizzle-schema.
+//
+// This tool converts SQL DDL files (CREATE TABLE statements, etc.) to
+// Drizzle ORM schema definitions in TypeScript format.
+//
+// Usage:
+//
+//        sql-to-drizzle-schema [SQL_FILE] -o [OUTPUT_FILE]
+//
+// Example:
+//
+//        sql-to-drizzle-schema ./schema.sql -o schema.ts
+package main
+
+import (
+        "fmt"
+        "os"
+        "strings"
+
+        "github.com/konojunya/sql-to-drizzle-schema/internal/generator"
+        "github.com/konojunya/sql-to-drizzle-schema/internal/parser"
+        "github.com/konojunya/sql-to-drizzle-schema/internal/reader"
+        "github.com/spf13/cobra"
+)
+
+var (
+        // outputFile stores the path for the generated TypeScript file
+        outputFile string
+        // dialectFlag stores the SQL dialect to use for parsing
+        dialectFlag string
+)
+
+// rootCmd represents the base command when called without any subcommands
+var rootCmd = &amp;cobra.Command{
+        Use:   "sql-to-drizzle-schema [SQL_FILE]",
+        Short: "Convert SQL schemas to Drizzle ORM schema definitions",
+        Long: `A CLI tool that converts SQL DDL files to Drizzle ORM schema definitions.
+
+This tool reads SQL files containing CREATE TABLE statements and other DDL
+commands, then generates equivalent TypeScript code using Drizzle ORM syntax.
+
+Supported SQL features:
+- CREATE TABLE statements
+- Column definitions with various data types
+- Primary keys and foreign keys
+- Constraints and indexes
+- Default values
+
+Supported database dialects:
+- PostgreSQL (default)
+- MySQL (planned)
+- Spanner (planned)
+
+Example usage:
+  sql-to-drizzle-schema ./database.sql -o schema.ts
+  sql-to-drizzle-schema ./database.sql --dialect postgresql -o schema.ts
+  sql-to-drizzle-schema ./mysql-schema.sql --dialect mysql -o schema.ts`,
+        Args: cobra.ExactArgs(1), // Exactly one SQL file argument is required
+        Run: func(cmd *cobra.Command, args []string) <span class="cov0" title="0">{
+                // Get the SQL file path from command arguments
+                sqlFile := args[0]
+
+                // Set default output file if not specified
+                if outputFile == "" </span><span class="cov0" title="0">{
+                        outputFile = "schema.ts"
+                }</span>
+
+                // Parse and validate dialect
+                <span class="cov0" title="0">var dialect parser.DatabaseDialect
+                switch strings.ToLower(dialectFlag) </span>{
+                case "postgresql", "postgres", "pg":<span class="cov0" title="0">
+                        dialect = parser.PostgreSQL</span>
+                case "mysql":<span class="cov0" title="0">
+                        dialect = parser.MySQL</span>
+                case "spanner":<span class="cov0" title="0">
+                        dialect = parser.Spanner</span>
+                default:<span class="cov0" title="0">
+                        if dialectFlag != "" </span><span class="cov0" title="0">{
+                                fmt.Fprintf(os.Stderr, "Unsupported dialect '%s'. Supported dialects: postgresql, mysql, spanner\n", dialectFlag)
+                                os.Exit(1)
+                        }</span>
+                        // Default to PostgreSQL
+                        <span class="cov0" title="0">dialect = parser.PostgreSQL</span>
+                }
+
+                // Display conversion information to user
+                <span class="cov0" title="0">fmt.Printf("Converting SQL file: %s\n", sqlFile)
+                fmt.Printf("Output file: %s\n", outputFile)
+                fmt.Printf("Database dialect: %s\n", dialect)
+
+                // Read the SQL file content
+                content, err := reader.ReadSQLFile(sqlFile)
+                if err != nil </span><span class="cov0" title="0">{
+                        fmt.Fprintf(os.Stderr, "Error reading SQL file: %v\n", err)
+                        os.Exit(1)
+                }</span>
+
+                // Parse the SQL content
+                <span class="cov0" title="0">fmt.Println("Parsing SQL content...")
+                parseOptions := parser.DefaultParseOptions()
+                parseOptions.Dialect = dialect
+                parseResult, err := parser.ParseSQLContent(content, dialect, parseOptions)
+                if err != nil </span><span class="cov0" title="0">{
+                        fmt.Fprintf(os.Stderr, "Error parsing SQL: %v\n", err)
+                        os.Exit(1)
+                }</span>
+
+                // Display parsing results
+                <span class="cov0" title="0">fmt.Printf("Successfully parsed %d table(s):\n", len(parseResult.Tables))
+                for _, table := range parseResult.Tables </span><span class="cov0" title="0">{
+                        fmt.Printf("  - Table: %s (%d columns)\n", table.Name, len(table.Columns))
+                        for _, column := range table.Columns </span><span class="cov0" title="0">{
+                                fmt.Printf("    - %s: %s", column.Name, column.Type)
+                                if column.Length != nil </span><span class="cov0" title="0">{
+                                        fmt.Printf("(%d)", *column.Length)
+                                }</span>
+                                <span class="cov0" title="0">if column.NotNull </span><span class="cov0" title="0">{
+                                        fmt.Print(" NOT NULL")
+                                }</span>
+                                <span class="cov0" title="0">if column.AutoIncrement </span><span class="cov0" title="0">{
+                                        fmt.Print(" AUTO_INCREMENT")
+                                }</span>
+                                <span class="cov0" title="0">if column.DefaultValue != nil </span><span class="cov0" title="0">{
+                                        fmt.Printf(" DEFAULT %s", *column.DefaultValue)
+                                }</span>
+                                <span class="cov0" title="0">fmt.Println()</span>
+                        }
+                        <span class="cov0" title="0">if len(table.PrimaryKey) &gt; 0 </span><span class="cov0" title="0">{
+                                fmt.Printf("    Primary Key: %v\n", table.PrimaryKey)
+                        }</span>
+                        <span class="cov0" title="0">if len(table.ForeignKeys) &gt; 0 </span><span class="cov0" title="0">{
+                                fmt.Printf("    Foreign Keys: %d\n", len(table.ForeignKeys))
+                        }</span>
+                }
+
+                // Display any parsing errors
+                <span class="cov0" title="0">if len(parseResult.Errors) &gt; 0 </span><span class="cov0" title="0">{
+                        fmt.Printf("\nWarnings during parsing:\n")
+                        for _, parseErr := range parseResult.Errors </span><span class="cov0" title="0">{
+                                fmt.Printf("  - %v\n", parseErr)
+                        }</span>
+                }
+
+                // Generate Drizzle schema
+                <span class="cov0" title="0">fmt.Println("\nGenerating Drizzle ORM schema...")
+                generatorOptions := generator.DefaultGeneratorOptions()
+
+                err = generator.GenerateSchemaToFile(parseResult.Tables, dialect, outputFile, generatorOptions)
+                if err != nil </span><span class="cov0" title="0">{
+                        fmt.Fprintf(os.Stderr, "Error generating schema: %v\n", err)
+                        os.Exit(1)
+                }</span>
+
+                <span class="cov0" title="0">fmt.Printf("✅ Successfully generated Drizzle schema: %s\n", outputFile)
+                fmt.Printf("📝 Generated %d table definition(s)\n", len(parseResult.Tables))</span>
+        },
+}
+
+// init initializes the CLI flags and configuration
+func init() <span class="cov8" title="1">{
+        // Add the output flag with short (-o) and long (--output) forms
+        // If not specified, the default "schema.ts" will be used
+        rootCmd.Flags().StringVarP(&amp;outputFile, "output", "o", "", "Output TypeScript file (default: schema.ts)")
+
+        // Add the dialect flag with short (-d) and long (--dialect) forms
+        // If not specified, PostgreSQL will be used as default
+        rootCmd.Flags().StringVarP(&amp;dialectFlag, "dialect", "d", "", "Database dialect (postgresql, mysql, spanner) (default: postgresql)")
+}</span>
+
+// main is the entry point of the application
+func main() <span class="cov0" title="0">{
+        // Execute the root command and handle any errors
+        if err := rootCmd.Execute(); err != nil </span><span class="cov0" title="0">{
+                // Print error to stderr and exit with non-zero status
+                fmt.Fprintln(os.Stderr, err)
+                os.Exit(1)
+        }</span>
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

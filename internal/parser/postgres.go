@@ -37,7 +37,7 @@ func (p *PostgreSQLParser) ParseSQL(content string, options ParseOptions) (*Pars
 		if stmtStr == "" {
 			continue
 		}
-		
+
 		// Remove leading comments but keep the rest
 		lines := strings.Split(stmtStr, "\n")
 		var cleanLines []string
@@ -47,11 +47,11 @@ func (p *PostgreSQLParser) ParseSQL(content string, options ParseOptions) (*Pars
 				cleanLines = append(cleanLines, line)
 			}
 		}
-		
+
 		if len(cleanLines) == 0 {
 			continue
 		}
-		
+
 		stmtStr = strings.Join(cleanLines, "\n")
 
 		// Use regex-based parsing for CREATE TABLE statements
@@ -156,7 +156,7 @@ func (p *PostgreSQLParser) parseColumnRegex(columnDef string, options ParseOptio
 	// Allow more flexible type matching including WITH TIME ZONE
 	columnRegex := regexp.MustCompile(`(?i)^\s*(\w+)\s+((?:[A-Z]+(?:\([^)]*\))?(?:\s+WITH\s+TIME\s+ZONE)?)+)\s*(.*)$`)
 	matches := columnRegex.FindStringSubmatch(columnDef)
-	
+
 	if len(matches) < 3 {
 		return nil, fmt.Errorf("could not parse column definition: %s", columnDef)
 	}
@@ -199,14 +199,14 @@ func (p *PostgreSQLParser) parseColumnRegex(columnDef string, options ParseOptio
 	// Parse constraints
 	if len(matches) > 3 {
 		constraints := strings.ToUpper(matches[3])
-		
+
 		if strings.Contains(constraints, "NOT NULL") {
 			column.NotNull = true
 		}
 		if strings.Contains(constraints, "UNIQUE") {
 			column.Unique = true
 		}
-		
+
 		// Parse DEFAULT value
 		defaultRegex := regexp.MustCompile(`(?i)DEFAULT\s+([^,\s]+(?:\s+[^,\s]+)*)`)
 		defaultMatches := defaultRegex.FindStringSubmatch(matches[3])
@@ -223,7 +223,7 @@ func (p *PostgreSQLParser) parseColumnRegex(columnDef string, options ParseOptio
 func (p *PostgreSQLParser) isConstraint(item string) bool {
 	constraintKeywords := []string{"CONSTRAINT", "PRIMARY KEY", "FOREIGN KEY", "CHECK", "UNIQUE"}
 	itemUpper := strings.ToUpper(strings.TrimSpace(item))
-	
+
 	for _, keyword := range constraintKeywords {
 		if strings.HasPrefix(itemUpper, keyword) {
 			return true
@@ -235,7 +235,7 @@ func (p *PostgreSQLParser) isConstraint(item string) bool {
 // parseConstraint parses a constraint definition
 func (p *PostgreSQLParser) parseConstraint(table *Table, constraintDef string, options ParseOptions) error {
 	constraintUpper := strings.ToUpper(strings.TrimSpace(constraintDef))
-	
+
 	// Parse PRIMARY KEY
 	if strings.Contains(constraintUpper, "PRIMARY KEY") {
 		pkRegex := regexp.MustCompile(`(?i)(?:CONSTRAINT\s+\w+\s+)?PRIMARY\s+KEY\s*\(([^)]+)\)`)
@@ -248,7 +248,7 @@ func (p *PostgreSQLParser) parseConstraint(table *Table, constraintDef string, o
 		}
 		return nil
 	}
-	
+
 	// Parse FOREIGN KEY
 	if strings.Contains(constraintUpper, "FOREIGN KEY") {
 		fkRegex := regexp.MustCompile(`(?i)CONSTRAINT\s+(\w+)\s+FOREIGN\s+KEY\s*\(([^)]+)\)\s+REFERENCES\s+(\w+)\s*\(([^)]+)\)`)
@@ -264,12 +264,12 @@ func (p *PostgreSQLParser) parseConstraint(table *Table, constraintDef string, o
 		}
 		return nil
 	}
-	
+
 	// For now, ignore other constraints
 	if options.IgnoreUnsupported {
 		return nil
 	}
-	
+
 	return fmt.Errorf("unsupported constraint: %s", constraintDef)
 }
 
@@ -280,10 +280,10 @@ func (p *PostgreSQLParser) splitTableItems(body string) []string {
 	parenDepth := 0
 	inString := false
 	stringChar := byte(0)
-	
+
 	for i := 0; i < len(body); i++ {
 		char := body[i]
-		
+
 		if !inString {
 			if char == '\'' || char == '"' {
 				inString = true
@@ -305,15 +305,15 @@ func (p *PostgreSQLParser) splitTableItems(body string) []string {
 				stringChar = 0
 			}
 		}
-		
+
 		current += string(char)
 	}
-	
+
 	// Add the last item
 	if strings.TrimSpace(current) != "" {
 		items = append(items, strings.TrimSpace(current))
 	}
-	
+
 	return items
 }
 
@@ -323,16 +323,16 @@ func (p *PostgreSQLParser) splitStatements(content string) []string {
 	// Remove SQL comments (-- style)
 	commentRegex := regexp.MustCompile(`--.*$`)
 	content = commentRegex.ReplaceAllString(content, "")
-	
+
 	// Split on semicolons, but be careful about semicolons in strings
 	statements := []string{}
 	current := ""
 	inString := false
 	stringChar := byte(0)
-	
+
 	for i := 0; i < len(content); i++ {
 		char := content[i]
-		
+
 		if !inString {
 			if char == '\'' || char == '"' {
 				inString = true
@@ -350,14 +350,14 @@ func (p *PostgreSQLParser) splitStatements(content string) []string {
 				stringChar = 0
 			}
 		}
-		
+
 		current += string(char)
 	}
-	
+
 	// Add the last statement if it doesn't end with semicolon
 	if strings.TrimSpace(current) != "" {
 		statements = append(statements, current)
 	}
-	
+
 	return statements
 }
