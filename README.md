@@ -3,7 +3,6 @@
 [![CI/CD Pipeline](https://github.com/konojunya/sql-to-drizzle-schema/actions/workflows/ci.yaml/badge.svg)](https://github.com/konojunya/sql-to-drizzle-schema/actions/workflows/ci.yaml)
 [![Go Version](https://img.shields.io/badge/go-1.24.1-blue.svg)](https://golang.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Go Report Card](https://goreportcard.com/badge/github.com/konojunya/sql-to-drizzle-schema)](https://goreportcard.com/report/github.com/konojunya/sql-to-drizzle-schema)
 [![Release](https://img.shields.io/github/v/release/konojunya/sql-to-drizzle-schema)](https://github.com/konojunya/sql-to-drizzle-schema/releases)
 
 A command-line tool that converts SQL DDL files to [Drizzle ORM](https://orm.drizzle.team/) schema definitions in TypeScript.
