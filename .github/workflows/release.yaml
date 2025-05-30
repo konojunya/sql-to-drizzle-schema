@@ -53,6 +53,9 @@ jobs:
       with:
         go-version: ${{ env.GO_VERSION }}
 
+    - name: Install golangci-lint
+      run: make lint-install
+
     - name: Run full CI pipeline
       run: make ci
 
