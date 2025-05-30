@@ -15,7 +15,9 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
+	"github.com/konojunya/sql-to-drizzle-schema/internal/parser"
 	"github.com/konojunya/sql-to-drizzle-schema/internal/reader"
 	"github.com/spf13/cobra"
 )
@@ -23,6 +25,8 @@ import (
 var (
 	// outputFile stores the path for the generated TypeScript file
 	outputFile string
+	// dialectFlag stores the SQL dialect to use for parsing
+	dialectFlag string
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -41,9 +45,15 @@ Supported SQL features:
 - Constraints and indexes
 - Default values
 
+Supported database dialects:
+- PostgreSQL (default)
+- MySQL (planned)
+- Spanner (planned)
+
 Example usage:
   sql-to-drizzle-schema ./database.sql -o schema.ts
-  sql-to-drizzle-schema ./migrations/*.sql --output drizzle-schema.ts`,
+  sql-to-drizzle-schema ./database.sql --dialect postgresql -o schema.ts
+  sql-to-drizzle-schema ./mysql-schema.sql --dialect mysql -o schema.ts`,
 	Args: cobra.ExactArgs(1), // Exactly one SQL file argument is required
 	Run: func(cmd *cobra.Command, args []string) {
 		// Get the SQL file path from command arguments
@@ -53,10 +63,29 @@ Example usage:
 		if outputFile == "" {
 			outputFile = "schema.ts"
 		}
+		
+		// Parse and validate dialect
+		var dialect parser.DatabaseDialect
+		switch strings.ToLower(dialectFlag) {
+		case "postgresql", "postgres", "pg":
+			dialect = parser.PostgreSQL
+		case "mysql":
+			dialect = parser.MySQL
+		case "spanner":
+			dialect = parser.Spanner
+		default:
+			if dialectFlag != "" {
+				fmt.Fprintf(os.Stderr, "Unsupported dialect '%s'. Supported dialects: postgresql, mysql, spanner\n", dialectFlag)
+				os.Exit(1)
+			}
+			// Default to PostgreSQL
+			dialect = parser.PostgreSQL
+		}
 
 		// Display conversion information to user
 		fmt.Printf("Converting SQL file: %s\n", sqlFile)
 		fmt.Printf("Output file: %s\n", outputFile)
+		fmt.Printf("Database dialect: %s\n", dialect)
 
 		// Read the SQL file content
 		content, err := reader.ReadSQLFile(sqlFile)
@@ -64,18 +93,56 @@ Example usage:
 			fmt.Fprintf(os.Stderr, "Error reading SQL file: %v\n", err)
 			os.Exit(1)
 		}
-
-		// Display the SQL content for debugging purposes
-		// TODO: Remove this in production version
-		fmt.Printf("SQL content:\n%s\n", content)
-
-		// TODO: Implement SQL parsing and Drizzle schema generation
+		
+		// Parse the SQL content
+		fmt.Println("Parsing SQL content...")
+		parseOptions := parser.DefaultParseOptions()
+		parseOptions.Dialect = dialect
+		parseResult, err := parser.ParseSQLContent(content, dialect, parseOptions)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error parsing SQL: %v\n", err)
+			os.Exit(1)
+		}
+		
+		// Display parsing results
+		fmt.Printf("Successfully parsed %d table(s):\n", len(parseResult.Tables))
+		for _, table := range parseResult.Tables {
+			fmt.Printf("  - Table: %s (%d columns)\n", table.Name, len(table.Columns))
+			for _, column := range table.Columns {
+				fmt.Printf("    - %s: %s", column.Name, column.Type)
+				if column.Length != nil {
+					fmt.Printf("(%d)", *column.Length)
+				}
+				if column.NotNull {
+					fmt.Print(" NOT NULL")
+				}
+				if column.AutoIncrement {
+					fmt.Print(" AUTO_INCREMENT")
+				}
+				if column.DefaultValue != nil {
+					fmt.Printf(" DEFAULT %s", *column.DefaultValue)
+				}
+				fmt.Println()
+			}
+			if len(table.PrimaryKey) > 0 {
+				fmt.Printf("    Primary Key: %v\n", table.PrimaryKey)
+			}
+		}
+		
+		// Display any parsing errors
+		if len(parseResult.Errors) > 0 {
+			fmt.Printf("\nWarnings during parsing:\n")
+			for _, parseErr := range parseResult.Errors {
+				fmt.Printf("  - %v\n", parseErr)
+			}
+		}
+		
+		// TODO: Implement Drizzle schema generation
 		// This will include:
-		// 1. Parsing SQL DDL statements
-		// 2. Converting SQL types to Drizzle types
-		// 3. Generating TypeScript code with proper imports
-		// 4. Writing the output file
-		fmt.Println("Conversion logic will be implemented here...")
+		// 1. Converting SQL types to Drizzle types
+		// 2. Generating TypeScript code with proper imports
+		// 3. Writing the output file
+		fmt.Println("\nDrizzle schema generation will be implemented next...")
 	},
 }
 
@@ -84,6 +151,10 @@ func init() {
 	// Add the output flag with short (-o) and long (--output) forms
 	// If not specified, the default "schema.ts" will be used
 	rootCmd.Flags().StringVarP(&outputFile, "output", "o", "", "Output TypeScript file (default: schema.ts)")
+	
+	// Add the dialect flag with short (-d) and long (--dialect) forms
+	// If not specified, PostgreSQL will be used as default
+	rootCmd.Flags().StringVarP(&dialectFlag, "dialect", "d", "", "Database dialect (postgresql, mysql, spanner) (default: postgresql)")
 }
 
 // main is the entry point of the application

@@ -18,11 +18,16 @@ The project follows Go best practices with a clean package structure:
 sql-to-drizzle-schema/
 ├── main.go                    # CLI entry point using Cobra
 ├── internal/                  # Internal packages (not importable by external projects)
-│   └── reader/               # File reading utilities
-│       └── file.go           # SQL file reading functionality
+│   ├── reader/               # File reading utilities
+│   │   └── file.go           # SQL file reading functionality
+│   └── parser/               # SQL parsing functionality
+│       ├── types.go          # Type definitions for parsed SQL structures
+│       ├── postgres.go       # PostgreSQL-specific parser implementation
+│       └── parser.go         # Parser factory and common functionality
 ├── example/                  # Example SQL files for testing
 │   └── postgres/
 │       └── create-table.sql  # PostgreSQL example schema
+├── doc.go                    # Package-level documentation
 ├── go.mod                    # Go module definition
 ├── go.sum                    # Go dependencies lock file
 └── CLAUDE.md                 # This file
@@ -32,12 +37,17 @@ sql-to-drizzle-schema/
 
 - **main**: CLI interface using Cobra, handles command-line arguments and orchestrates the conversion process
 - **internal/reader**: File I/O operations for reading SQL files with proper error handling
+- **internal/parser**: SQL parsing functionality with support for PostgreSQL (extensible for MySQL/Spanner)
+  - **types.go**: Type definitions for parsed SQL structures (Table, Column, Constraint, etc.)
+  - **postgres.go**: PostgreSQL-specific parser using regex-based parsing
+  - **parser.go**: Parser factory and common functionality
 - **example**: Sample SQL files for testing and documentation purposes
 
 ### Dependencies
 
 - `github.com/spf13/cobra`: CLI framework for building command-line applications
-- Standard library packages: `fmt`, `os`, `io` for basic operations
+- `github.com/xwb1989/sqlparser`: SQL parsing library (used minimally for validation)
+- Standard library packages: `fmt`, `os`, `io`, `regexp`, `strings` for basic operations
 
 ## Common Commands
 
@@ -121,11 +131,17 @@ godoc -http=:6060
 The project is in early development with the following implemented:
 - ✅ CLI framework using Cobra
 - ✅ File reading functionality with error handling
-- ✅ Package structure and documentation
-- 🚧 SQL parsing (TODO)
-- 🚧 Drizzle schema generation (TODO)
-- 🚧 TypeScript output generation (TODO)
-- 🚧 Test suite (TODO)
+- ✅ Package structure and comprehensive documentation
+- ✅ PostgreSQL SQL parsing (CREATE TABLE statements)
+  - ✅ Column definitions with types, constraints, defaults
+  - ✅ Primary key constraints
+  - ✅ Foreign key constraints (basic support)
+  - ✅ PostgreSQL-specific types (BIGSERIAL, TIMESTAMP WITH TIME ZONE, etc.)
+- 🚧 Drizzle schema generation (in development)
+- 🚧 TypeScript output generation (planned)
+- 🚧 MySQL parser (planned)
+- 🚧 Spanner parser (planned)
+- 🚧 Test suite (planned)
 
 ## Future Enhancements
 
