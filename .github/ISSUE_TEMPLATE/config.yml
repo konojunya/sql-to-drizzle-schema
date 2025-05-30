@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Discussions
+    url: https://github.com/konojunya/sql-to-drizzle-schema/discussions
+    about: Ask questions, share ideas, and discuss with the community
+  - name: 📚 Documentation
+    url: https://github.com/konojunya/sql-to-drizzle-schema/blob/main/README.md
+    about: Read the project documentation and usage examples
+  - name: 🛠️ Development Guide
+    url: https://github.com/konojunya/sql-to-drizzle-schema/blob/main/CLAUDE.md
+    about: Learn about contributing and development guidelines

@@ -209,6 +209,53 @@ The project has reached a functional state with complete PostgreSQL support:
 - 🚧 Spanner parser (planned)
 - 🚧 Multi-column foreign keys (planned)
 
+## CI/CD Pipeline
+
+The project uses GitHub Actions for comprehensive CI/CD automation:
+
+### Automated Workflows
+
+1. **CI Pipeline** (`.github/workflows/ci.yaml`):
+   - **Linting & Formatting**: golangci-lint, go fmt, go vet
+   - **Security Scanning**: gosec security analysis
+   - **Cross-platform Testing**: Linux, macOS, Windows
+   - **Multi-version Testing**: Go 1.23, 1.24.1
+   - **Integration Testing**: End-to-end conversion validation
+   - **Build Verification**: Cross-platform binary compilation
+   - **Vulnerability Scanning**: govulncheck for dependencies
+
+2. **Release Automation** (`.github/workflows/release.yaml`):
+   - **Automated Releases**: Triggered by version tags (v*.*.*)
+   - **Cross-platform Binaries**: Linux, macOS, Windows (AMD64, ARM64)
+   - **Release Notes**: Auto-generated changelog
+   - **Go Module Publishing**: Automatic proxy cache updates
+   - **Documentation Updates**: Installation instructions
+
+3. **Dependency Management**:
+   - **Dependabot**: Weekly dependency updates
+   - **Security Alerts**: Automated vulnerability detection
+   - **Auto-merging**: Compatible with automated PR merging
+
+### CI Commands Integration
+
+The CI pipeline leverages the Makefile targets:
+
+```bash
+# CI pipeline commands used
+make ci                     # Full CI pipeline
+make deps                   # Dependency management
+make check                  # All quality checks
+make test-coverage         # Coverage reporting
+make build-all             # Cross-platform builds
+make security              # Security scanning
+```
+
+### Development Integration
+
+- **Pre-commit Checks**: Use `make check` before pushing
+- **Local CI Simulation**: Run `make ci` locally
+- **Release Preparation**: Use `make release-prep`
+
 ## Future Enhancements
 
 - Support for multiple SQL dialects (PostgreSQL, MySQL, SQLite)

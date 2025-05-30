@@ -1,8 +1,10 @@
 # sql-to-drizzle-schema
 
+[![CI/CD Pipeline](https://github.com/konojunya/sql-to-drizzle-schema/actions/workflows/ci.yaml/badge.svg)](https://github.com/konojunya/sql-to-drizzle-schema/actions/workflows/ci.yaml)
 [![Go Version](https://img.shields.io/badge/go-1.24.1-blue.svg)](https://golang.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Go Report Card](https://goreportcard.com/badge/github.com/konojunya/sql-to-drizzle-schema)](https://goreportcard.com/report/github.com/konojunya/sql-to-drizzle-schema)
+[![Release](https://img.shields.io/github/v/release/konojunya/sql-to-drizzle-schema)](https://github.com/konojunya/sql-to-drizzle-schema/releases)
 
 A command-line tool that converts SQL DDL files to [Drizzle ORM](https://orm.drizzle.team/) schema definitions in TypeScript.
 
@@ -288,10 +290,34 @@ Contributions are welcome! Please feel free to submit issues, feature requests, 
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Make your changes following the coding guidelines in [CLAUDE.md](CLAUDE.md)
 4. Add tests for your changes
-5. Run `go fmt ./...` and `go test ./...`
+5. Run the development workflow: `make dev` or `make check`
 6. Commit your changes (`git commit -m 'Add amazing feature'`)
 7. Push to the branch (`git push origin feature/amazing-feature`)
 8. Open a Pull Request
+
+### Development Workflow
+```bash
+# Setup development environment
+make setup
+
+# Development cycle
+make dev          # format + test + build
+make check        # format + vet + lint + test
+
+# Run specific checks
+make test         # run tests
+make lint         # run linter
+make security     # run security scan
+```
+
+### CI/CD Pipeline
+This project uses GitHub Actions for continuous integration and deployment:
+
+- **Automated Testing**: Tests run on Linux, macOS, and Windows across multiple Go versions
+- **Code Quality**: Automated linting, formatting, and security scanning
+- **Cross-platform Builds**: Automatic binary generation for multiple platforms
+- **Release Automation**: Automated releases with changelog generation
+- **Dependency Updates**: Automated dependency updates via Dependabot
 
 ### Reporting Issues
 When reporting issues, please include:

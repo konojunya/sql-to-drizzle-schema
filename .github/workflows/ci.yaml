@@ -1,0 +1,346 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch: # Allow manual triggering
+
+env:
+  GO_VERSION: '1.24.1'
+
+jobs:
+  # Linting and formatting check
+  lint:
+    name: Lint and Format
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ env.GO_VERSION }}
+
+    - name: Cache Go modules
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+
+    - name: Install dependencies
+      run: make deps
+
+    - name: Check formatting
+      run: |
+        make fmt
+        if [[ -n $(git diff) ]]; then
+          echo "Code is not formatted properly"
+          git diff
+          exit 1
+        fi
+
+    - name: Install golangci-lint
+      run: make lint-install
+
+    - name: Run linter
+      run: make lint
+
+    - name: Run go vet
+      run: make vet
+
+  # Security scanning
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ env.GO_VERSION }}
+
+    - name: Cache Go modules
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+
+    - name: Install gosec
+      run: make security-install
+
+    - name: Run security scan
+      run: make security
+      continue-on-error: true # Security issues shouldn't block CI for now
+
+  # Test matrix across multiple Go versions and platforms
+  test:
+    name: Test
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        go-version: ['1.23', '1.24.1']
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ matrix.go-version }}
+
+    - name: Cache Go modules
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: ${{ runner.os }}-${{ matrix.go-version }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-${{ matrix.go-version }}-go-
+
+    - name: Install dependencies
+      run: make deps
+
+    - name: Run tests
+      run: make test
+
+    - name: Run tests with coverage (Ubuntu only)
+      if: matrix.os == 'ubuntu-latest' && matrix.go-version == '1.24.1'
+      run: make test-coverage
+
+    - name: Upload coverage reports to Codecov (Ubuntu only)
+      if: matrix.os == 'ubuntu-latest' && matrix.go-version == '1.24.1'
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage/coverage.out
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  # Integration tests
+  integration:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ env.GO_VERSION }}
+
+    - name: Cache Go modules
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+
+    - name: Install dependencies
+      run: make deps
+
+    - name: Build binary
+      run: make build
+
+    - name: Run example conversion
+      run: make example
+
+    - name: Validate generated schema
+      run: |
+        # Check that schema file was generated
+        if [[ ! -f "example-output.ts" ]]; then
+          echo "Example output file was not generated"
+          exit 1
+        fi
+        
+        # Check that schema contains expected content
+        if ! grep -q "import.*drizzle-orm/pg-core" example-output.ts; then
+          echo "Generated schema missing Drizzle imports"
+          exit 1
+        fi
+        
+        if ! grep -q "export const.*pgTable" example-output.ts; then
+          echo "Generated schema missing table exports"
+          exit 1
+        fi
+        
+        echo "✅ Integration test passed - schema generated successfully"
+
+  # Build verification across platforms
+  build:
+    name: Build Verification
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ env.GO_VERSION }}
+
+    - name: Cache Go modules
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+
+    - name: Install dependencies
+      run: make deps
+
+    - name: Build for all platforms
+      run: make build-all
+
+    - name: Verify binaries
+      run: |
+        echo "Checking generated binaries..."
+        ls -la bin/
+        
+        # Verify binaries exist
+        if [[ ! -f "bin/sql-to-drizzle-schema-linux-amd64" ]]; then
+          echo "Linux AMD64 binary missing"
+          exit 1
+        fi
+        
+        if [[ ! -f "bin/sql-to-drizzle-schema-darwin-amd64" ]]; then
+          echo "macOS AMD64 binary missing"
+          exit 1
+        fi
+        
+        if [[ ! -f "bin/sql-to-drizzle-schema-windows-amd64.exe" ]]; then
+          echo "Windows AMD64 binary missing"
+          exit 1
+        fi
+        
+        echo "✅ All platform binaries built successfully"
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: binaries-${{ github.sha }}
+        path: bin/
+        retention-days: 30
+
+  # Dependency vulnerability check
+  vulnerability-check:
+    name: Vulnerability Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ env.GO_VERSION }}
+
+    - name: Install govulncheck
+      run: go install golang.org/x/vuln/cmd/govulncheck@latest
+
+    - name: Run vulnerability check
+      run: govulncheck ./...
+
+  # Performance benchmarks (optional)
+  benchmark:
+    name: Performance Benchmarks
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ env.GO_VERSION }}
+
+    - name: Cache Go modules
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+
+    - name: Install dependencies
+      run: make deps
+
+    - name: Run benchmarks
+      run: make bench
+
+  # Final status check
+  ci-success:
+    name: CI Success
+    runs-on: ubuntu-latest
+    needs: [lint, security, test, integration, build, vulnerability-check]
+    if: always()
+    
+    steps:
+    - name: Check all jobs
+      run: |
+        if [[ "${{ needs.lint.result }}" != "success" ]]; then
+          echo "Lint job failed"
+          exit 1
+        fi
+        if [[ "${{ needs.test.result }}" != "success" ]]; then
+          echo "Test job failed"
+          exit 1
+        fi
+        if [[ "${{ needs.integration.result }}" != "success" ]]; then
+          echo "Integration job failed"
+          exit 1
+        fi
+        if [[ "${{ needs.build.result }}" != "success" ]]; then
+          echo "Build job failed"
+          exit 1
+        fi
+        if [[ "${{ needs.vulnerability-check.result }}" != "success" ]]; then
+          echo "Vulnerability check failed"
+          exit 1
+        fi
+        
+        echo "✅ All CI jobs completed successfully!"
+
+    - name: Report status
+      run: |
+        echo "🎉 CI Pipeline completed successfully!"
+        echo "📊 Jobs status:"
+        echo "  - Lint: ${{ needs.lint.result }}"
+        echo "  - Security: ${{ needs.security.result }}"
+        echo "  - Test: ${{ needs.test.result }}"
+        echo "  - Integration: ${{ needs.integration.result }}"
+        echo "  - Build: ${{ needs.build.result }}"
+        echo "  - Vulnerability Check: ${{ needs.vulnerability-check.result }}"
