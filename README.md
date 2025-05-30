@@ -226,11 +226,27 @@ When reporting issues, please include:
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+## 👥 Authors
+
+This project is primarily developed by **Claude (Anthropic's AI assistant)** under the direction of [konojunya](https://github.com/konojunya).
+
+### Main Committer
+- **Claude**: Primary developer responsible for code implementation, architecture design, and documentation
+- **Role**: All code, documentation, and project structure development
+
+### Project Owner
+- **[konojunya](https://github.com/konojunya)**: Project owner and maintainer
+- **Role**: Project direction, requirements specification, and repository management
+
+### Development Model
+This project serves as an example of AI-assisted software development, where Claude handles the complete implementation while working under human guidance and supervision.
+
 ## 🙏 Acknowledgments
 
 - [Drizzle ORM](https://orm.drizzle.team/) - The excellent TypeScript ORM this tool generates code for
 - [Cobra](https://github.com/spf13/cobra) - The CLI framework used for building the command-line interface
 - The Go community for excellent tooling and best practices
+- [Anthropic](https://www.anthropic.com/) - For developing Claude, the AI assistant that built this project
 
 ## 🔗 Related Projects
 
@@ -239,4 +255,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-Made with ❤️ by [konojunya](https://github.com/konojunya)
+Developed by Claude (Anthropic) 🤖 • Maintained by [konojunya](https://github.com/konojunya) ❤️
