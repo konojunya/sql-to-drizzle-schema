@@ -192,6 +192,7 @@ The project has reached a functional state with complete PostgreSQL support:
   - ✅ Constraint mapping (NOT NULL → .notNull(), DEFAULT → .default(), etc.)
   - ✅ Naming convention support (camelCase, PascalCase, snake_case)
   - ✅ TypeScript code generation with proper imports
+  - ✅ Auto-generated header comments with "DO NOT EDIT" warnings and timestamps
 - ✅ TypeScript output generation with formatted code
 - ✅ Complete end-to-end conversion pipeline
 - ✅ Foreign key relationships in generated schema
