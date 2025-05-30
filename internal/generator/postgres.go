@@ -201,8 +201,12 @@ func (g *PostgreSQLSchemaGenerator) GenerateSchema(tables []parser.Table, option
 
 	schema.Imports = []string{fmt.Sprintf("import { %s } from 'drizzle-orm/pg-core';", strings.Join(importList, ", "))}
 
-	// Generate table definitions
-	for _, table := range tables {
+	// Sort tables to handle foreign key dependencies
+	// Tables without foreign keys first, then tables with foreign keys
+	sortedTables := g.sortTablesByDependencies(tables)
+
+	// Generate table definitions in dependency order
+	for _, table := range sortedTables {
 		generatedTable, err := g.GenerateTable(table, options)
 		if err != nil {
 			return nil, fmt.Errorf("failed to generate table %s: %w", table.Name, err)
@@ -231,6 +235,48 @@ func (g *PostgreSQLSchemaGenerator) GenerateSchema(tables []parser.Table, option
 
 	schema.Content = contentBuilder.String()
 	return schema, nil
+}
+
+// sortTablesByDependencies sorts tables so that referenced tables come before referencing tables
+func (g *PostgreSQLSchemaGenerator) sortTablesByDependencies(tables []parser.Table) []parser.Table {
+	// Create a map for quick lookup
+	tableMap := make(map[string]parser.Table)
+	for _, table := range tables {
+		tableMap[table.Name] = table
+	}
+
+	// Simple topological sort
+	visited := make(map[string]bool)
+	visiting := make(map[string]bool)
+	sorted := []parser.Table{}
+
+	var visit func(tableName string)
+	visit = func(tableName string) {
+		if visited[tableName] || visiting[tableName] {
+			return
+		}
+
+		visiting[tableName] = true
+		table := tableMap[tableName]
+
+		// Visit all dependencies (referenced tables) first
+		for _, fk := range table.ForeignKeys {
+			if _, exists := tableMap[fk.ReferencedTable]; exists {
+				visit(fk.ReferencedTable)
+			}
+		}
+
+		visiting[tableName] = false
+		visited[tableName] = true
+		sorted = append(sorted, table)
+	}
+
+	// Visit all tables
+	for _, table := range tables {
+		visit(table.Name)
+	}
+
+	return sorted
 }
 
 // GenerateTable generates a single table definition
@@ -269,6 +315,19 @@ func (g *PostgreSQLSchemaGenerator) GenerateTable(table parser.Table, options Ge
 		for _, pkCol := range table.PrimaryKey {
 			if pkCol == column.Name {
 				builder.WriteString(".primaryKey()")
+				break
+			}
+		}
+
+		// Add foreign key reference if this column has one
+		for _, fk := range table.ForeignKeys {
+			// Check if this column is part of a foreign key (support single-column FKs for now)
+			if len(fk.Columns) == 1 && fk.Columns[0] == column.Name {
+				referencedTableName := g.convertCase(fk.ReferencedTable, options.TableNameCase)
+				if len(fk.ReferencedColumns) == 1 {
+					referencedColumnName := g.convertCase(fk.ReferencedColumns[0], options.ColumnNameCase)
+					builder.WriteString(fmt.Sprintf(".references(() => %s.%s)", referencedTableName, referencedColumnName))
+				}
 				break
 			}
 		}

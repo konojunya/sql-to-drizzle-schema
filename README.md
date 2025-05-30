@@ -129,7 +129,18 @@ export const posts = pgTable('posts', {
   id: bigserial('id', { mode: 'number' }).notNull(),
   title: varchar('title', { length: 255 }).notNull(),
   content: text('content').notNull(),
-  userId: bigint('user_id', { mode: 'number' }).notNull(),
+  userId: bigint('user_id', { mode: 'number' }).notNull().references(() => users.id),
+  deletedAt: timestamp('deleted_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
+});
+
+// comments table
+export const comments = pgTable('comments', {
+  id: bigserial('id', { mode: 'number' }).notNull(),
+  content: text('content').notNull(),
+  userId: bigint('user_id', { mode: 'number' }).notNull().references(() => users.id),
+  postId: bigint('post_id', { mode: 'number' }).notNull().references(() => posts.id),
   deletedAt: timestamp('deleted_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
@@ -219,9 +230,10 @@ go fmt ./...
 - ✅ Drizzle ORM schema generation for PostgreSQL
 - ✅ TypeScript output generation with proper imports
 - ✅ Complete end-to-end conversion pipeline
+- ✅ Foreign key relationships with .references() support
+- ✅ Table dependency ordering for proper schema generation
 - 🚧 MySQL parser (planned)
 - 🚧 Spanner parser (planned)
-- 🚧 Foreign key relationships (planned)
 - 🚧 Test suite (planned)
 
 ### Development Guidelines

@@ -128,6 +128,9 @@ Example usage:
 			if len(table.PrimaryKey) > 0 {
 				fmt.Printf("    Primary Key: %v\n", table.PrimaryKey)
 			}
+			if len(table.ForeignKeys) > 0 {
+				fmt.Printf("    Foreign Keys: %d\n", len(table.ForeignKeys))
+			}
 		}
 		
 		// Display any parsing errors

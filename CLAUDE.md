@@ -151,9 +151,13 @@ The project has reached a functional state with complete PostgreSQL support:
   - ✅ TypeScript code generation with proper imports
 - ✅ TypeScript output generation with formatted code
 - ✅ Complete end-to-end conversion pipeline
+- ✅ Foreign key relationships in generated schema
+  - ✅ Automatic .references() generation for foreign key columns
+  - ✅ Table dependency sorting for proper declaration order
+  - ✅ Support for single-column foreign keys
 - 🚧 MySQL parser (planned)
 - 🚧 Spanner parser (planned)
-- 🚧 Foreign key relationships in generated schema (planned)
+- 🚧 Multi-column foreign keys (planned)
 - 🚧 Test suite (planned)
 
 ## Future Enhancements
