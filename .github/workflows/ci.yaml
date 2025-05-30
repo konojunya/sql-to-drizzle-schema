@@ -30,8 +30,9 @@ jobs:
         path: |
           ~/.cache/go-build
           ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-lint-go-${{ hashFiles('**/go.sum') }}
         restore-keys: |
+          ${{ runner.os }}-lint-go-
           ${{ runner.os }}-go-
 
     - name: Install dependencies
@@ -74,8 +75,9 @@ jobs:
         path: |
           ~/.cache/go-build
           ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-security-go-${{ hashFiles('**/go.sum') }}
         restore-keys: |
+          ${{ runner.os }}-security-go-
           ${{ runner.os }}-go-
 
     - name: Install gosec
@@ -109,9 +111,10 @@ jobs:
         path: |
           ~/.cache/go-build
           ~/go/pkg/mod
-        key: ${{ runner.os }}-${{ matrix.go-version }}-go-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-test-${{ matrix.go-version }}-go-${{ hashFiles('**/go.sum') }}
         restore-keys: |
-          ${{ runner.os }}-${{ matrix.go-version }}-go-
+          ${{ runner.os }}-test-${{ matrix.go-version }}-go-
+          ${{ runner.os }}-go-
 
     - name: Install dependencies
       run: make deps
@@ -155,8 +158,9 @@ jobs:
         path: |
           ~/.cache/go-build
           ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-integration-go-${{ hashFiles('**/go.sum') }}
         restore-keys: |
+          ${{ runner.os }}-integration-go-
           ${{ runner.os }}-go-
 
     - name: Install dependencies
@@ -210,8 +214,9 @@ jobs:
         path: |
           ~/.cache/go-build
           ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-build-go-${{ hashFiles('**/go.sum') }}
         restore-keys: |
+          ${{ runner.os }}-build-go-
           ${{ runner.os }}-go-
 
     - name: Install dependencies
