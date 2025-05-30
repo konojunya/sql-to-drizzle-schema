@@ -1,2 +1,242 @@
 # sql-to-drizzle-schema
-SQL to drizzle schema
+
+[![Go Version](https://img.shields.io/badge/go-1.24.1-blue.svg)](https://golang.org/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Go Report Card](https://goreportcard.com/badge/github.com/konojunya/sql-to-drizzle-schema)](https://goreportcard.com/report/github.com/konojunya/sql-to-drizzle-schema)
+
+A command-line tool that converts SQL DDL files to [Drizzle ORM](https://orm.drizzle.team/) schema definitions in TypeScript.
+
+## 🎯 Purpose
+
+This tool bridges the gap between traditional SQL schema definitions and modern TypeScript ORM solutions by automatically converting CREATE TABLE statements and other DDL commands into equivalent Drizzle ORM schema code.
+
+Perfect for:
+- Migrating existing SQL schemas to Drizzle ORM
+- Developers who prefer defining schemas in SQL first
+- Converting legacy database schemas to modern TypeScript ORMs
+- Rapid prototyping with existing SQL schemas
+
+## ✨ Features
+
+### Current Features
+- 🔧 **CLI Interface**: Easy-to-use command-line tool with intuitive flags
+- 📁 **File Reading**: Robust SQL file reading with comprehensive error handling
+- 📦 **Clean Architecture**: Well-structured Go codebase following best practices
+- 📚 **Comprehensive Documentation**: Detailed code comments and documentation
+
+### Planned Features
+- 🔍 **SQL Parsing**: Parse various SQL DDL statements (CREATE TABLE, ALTER TABLE, etc.)
+- 🔄 **Type Conversion**: Convert SQL data types to appropriate Drizzle ORM types
+- 📝 **TypeScript Generation**: Generate clean TypeScript code with proper imports
+- 🗄️ **Multi-Database Support**: Support for PostgreSQL, MySQL, and SQLite
+- 🔗 **Relationships**: Handle foreign keys and table relationships
+- 📊 **Advanced Features**: Support for indexes, constraints, and default values
+
+## 🚀 Installation
+
+### Prerequisites
+- Go 1.24.1 or later
+
+### From Source
+```bash
+# Clone the repository
+git clone https://github.com/konojunya/sql-to-drizzle-schema.git
+cd sql-to-drizzle-schema
+
+# Build the binary
+go build -o sql-to-drizzle-schema
+
+# (Optional) Install globally
+go install github.com/konojunya/sql-to-drizzle-schema@latest
+```
+
+### Using Go Install
+```bash
+go install github.com/konojunya/sql-to-drizzle-schema@latest
+```
+
+## 📖 Usage
+
+### Basic Usage
+```bash
+# Convert SQL file to Drizzle schema
+./sql-to-drizzle-schema input.sql -o schema.ts
+
+# Use default output filename (schema.ts)
+./sql-to-drizzle-schema input.sql
+
+# Get help
+./sql-to-drizzle-schema --help
+```
+
+### Command-Line Options
+```
+Usage:
+  sql-to-drizzle-schema [SQL_FILE] [flags]
+
+Flags:
+  -h, --help            help for sql-to-drizzle-schema
+  -o, --output string   Output TypeScript file (default: schema.ts)
+```
+
+## 📝 Examples
+
+### Input SQL File (PostgreSQL)
+```sql
+-- users table
+CREATE TABLE users (
+  id BIGSERIAL NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  role VARCHAR(255) NOT NULL DEFAULT 'user',
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT pk_users PRIMARY KEY (id)
+);
+
+-- posts table
+CREATE TABLE posts (
+  id BIGSERIAL NOT NULL PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  content TEXT NOT NULL,
+  user_id BIGINT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_posts_users FOREIGN KEY (user_id) REFERENCES users(id)
+);
+```
+
+### Expected Output (TypeScript)
+> **Note**: This is the planned output format. The conversion logic is currently under development.
+
+```typescript
+import { pgTable, bigserial, varchar, text, bigint, timestamp } from 'drizzle-orm/pg-core';
+
+export const users = pgTable('users', {
+  id: bigserial('id', { mode: 'number' }).primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  email: varchar('email', { length: 255 }).notNull().unique(),
+  password: varchar('password', { length: 255 }).notNull(),
+  role: varchar('role', { length: 255 }).notNull().default('user'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const posts = pgTable('posts', {
+  id: bigserial('id', { mode: 'number' }).primaryKey(),
+  title: varchar('title', { length: 255 }).notNull(),
+  content: text('content').notNull(),
+  userId: bigint('user_id', { mode: 'number' }).notNull().references(() => users.id),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+```
+
+### Running the Example
+```bash
+# Try with the included example
+./sql-to-drizzle-schema ./example/postgres/create-table.sql -o example-output.ts
+```
+
+## 🏗️ Architecture
+
+The project follows Go best practices with a clean package structure:
+
+```
+sql-to-drizzle-schema/
+├── main.go                    # CLI entry point using Cobra
+├── internal/                  # Internal packages
+│   └── reader/               # File reading utilities
+│       └── file.go           # SQL file reading functionality
+├── example/                  # Example SQL files
+│   └── postgres/
+│       └── create-table.sql  # PostgreSQL example schema
+├── doc.go                    # Package documentation
+├── CLAUDE.md                 # Development guidelines
+├── README.md                 # This file
+├── LICENSE                   # MIT License
+├── go.mod                    # Go module definition
+└── go.sum                    # Go dependencies
+```
+
+### Key Components
+- **CLI Interface**: Built with [Cobra](https://github.com/spf13/cobra) for robust command-line handling
+- **File Reader**: Handles SQL file I/O with comprehensive error handling
+- **Internal Packages**: Following Go conventions for internal-only code
+
+## 🛠️ Development
+
+### Prerequisites
+- Go 1.24.1 or later
+- Basic understanding of SQL and TypeScript
+
+### Building from Source
+```bash
+# Clone and enter the repository
+git clone https://github.com/konojunya/sql-to-drizzle-schema.git
+cd sql-to-drizzle-schema
+
+# Download dependencies
+go mod download
+
+# Build the project
+go build -o sql-to-drizzle-schema
+
+# Run tests
+go test ./...
+
+# Format code
+go fmt ./...
+```
+
+### Project Status
+- ✅ CLI framework with Cobra
+- ✅ File reading functionality
+- ✅ Package structure and documentation
+- 🚧 SQL parsing (in development)
+- 🚧 Drizzle schema generation (planned)
+- 🚧 TypeScript output generation (planned)
+- 🚧 Test suite (planned)
+
+### Development Guidelines
+Please see [CLAUDE.md](CLAUDE.md) for detailed development guidelines, coding standards, and architectural decisions.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit issues, feature requests, and pull requests.
+
+### How to Contribute
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes following the coding guidelines in [CLAUDE.md](CLAUDE.md)
+4. Add tests for your changes
+5. Run `go fmt ./...` and `go test ./...`
+6. Commit your changes (`git commit -m 'Add amazing feature'`)
+7. Push to the branch (`git push origin feature/amazing-feature`)
+8. Open a Pull Request
+
+### Reporting Issues
+When reporting issues, please include:
+- Go version
+- Operating system
+- Input SQL file (if applicable)
+- Expected vs actual behavior
+- Steps to reproduce
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- [Drizzle ORM](https://orm.drizzle.team/) - The excellent TypeScript ORM this tool generates code for
+- [Cobra](https://github.com/spf13/cobra) - The CLI framework used for building the command-line interface
+- The Go community for excellent tooling and best practices
+
+## 🔗 Related Projects
+
+- [Drizzle ORM](https://github.com/drizzle-team/drizzle-orm) - TypeScript ORM for SQL databases
+- [Drizzle Kit](https://github.com/drizzle-team/drizzle-kit) - CLI companion for Drizzle ORM
+
+---
+
+Made with ❤️ by [konojunya](https://github.com/konojunya)

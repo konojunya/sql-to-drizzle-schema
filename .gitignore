@@ -23,3 +23,28 @@ go.work.sum
 
 # env file
 .env
+
+# Project specific binaries
+sql-to-drizzle-schema
+sql-to-drizzle-schema.exe
+
+# Output files
+*.ts
+schema.ts
+output.ts
+example-output.ts
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
