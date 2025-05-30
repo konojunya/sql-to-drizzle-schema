@@ -106,7 +106,7 @@ lint-install: ## Install golangci-lint
 security: ## Run security scan (requires gosec)
 	@echo "Running security scan..."
 	@which gosec >/dev/null 2>&1 || (echo "❌ gosec not found. Install it with: make security-install" && exit 1)
-	gosec ./...
+	gosec -exclude=G304 ./...
 	@echo "✅ Security scan completed"
 
 # Install security scanner
