@@ -88,5 +88,9 @@ Relates to #<!-- issue number -->
 
 ---
 
+**CI/CD Information:**
+<!-- For external contributors -->
+🤖 **CI Pipeline**: If you're an external contributor, the CI pipeline will not run automatically on your PR for security reasons. A maintainer will trigger the CI by commenting `/run-ci` on your PR once they've reviewed the changes.
+
 **Reviewer Notes:**
 <!-- For reviewers: Any specific areas to focus on during review -->
