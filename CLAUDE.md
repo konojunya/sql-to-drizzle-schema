@@ -256,16 +256,6 @@ make security              # Security scanning
 - **Local CI Simulation**: Run `make ci` locally
 - **Release Preparation**: Use `make release-prep`
 
-### CI/CD Security
-
-For security reasons, the CI pipeline has different behaviors based on the contributor:
-
-1. **konojunya**: CI runs automatically on all pushes and PRs
-2. **External Contributors**: CI is skipped by default and must be triggered manually
-3. **Manual CI Trigger**: konojunya can comment `/run-ci` on a PR to run the full CI pipeline
-
-This prevents external contributors from consuming excessive CI resources while still allowing thorough testing of contributions after review.
-
 ## Future Enhancements
 
 - Support for multiple SQL dialects (PostgreSQL, MySQL, SQLite)
