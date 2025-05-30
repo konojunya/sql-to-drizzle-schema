@@ -28,6 +28,9 @@ go.work.sum
 sql-to-drizzle-schema
 sql-to-drizzle-schema.exe
 
+# Build directory
+bin/
+
 # Output files
 *.ts
 schema.ts
