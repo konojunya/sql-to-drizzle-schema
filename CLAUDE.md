@@ -20,10 +20,14 @@ sql-to-drizzle-schema/
 ├── internal/                  # Internal packages (not importable by external projects)
 │   ├── reader/               # File reading utilities
 │   │   └── file.go           # SQL file reading functionality
-│   └── parser/               # SQL parsing functionality
-│       ├── types.go          # Type definitions for parsed SQL structures
-│       ├── postgres.go       # PostgreSQL-specific parser implementation
-│       └── parser.go         # Parser factory and common functionality
+│   ├── parser/               # SQL parsing functionality
+│   │   ├── types.go          # Type definitions for parsed SQL structures
+│   │   ├── postgres.go       # PostgreSQL-specific parser implementation
+│   │   └── parser.go         # Parser factory and common functionality
+│   └── generator/            # Drizzle schema generation functionality
+│       ├── types.go          # Type definitions for schema generation
+│       ├── postgres.go       # PostgreSQL to Drizzle type mapping and generation
+│       └── generator.go      # Generator factory and file operations
 ├── example/                  # Example SQL files for testing
 │   └── postgres/
 │       └── create-table.sql  # PostgreSQL example schema
@@ -41,12 +45,15 @@ sql-to-drizzle-schema/
   - **types.go**: Type definitions for parsed SQL structures (Table, Column, Constraint, etc.)
   - **postgres.go**: PostgreSQL-specific parser using regex-based parsing
   - **parser.go**: Parser factory and common functionality
+- **internal/generator**: Drizzle ORM schema generation functionality
+  - **types.go**: Type definitions for schema generation (GeneratorOptions, DrizzleType, etc.)
+  - **postgres.go**: PostgreSQL to Drizzle type mapping and TypeScript code generation
+  - **generator.go**: Generator factory and file operations
 - **example**: Sample SQL files for testing and documentation purposes
 
 ### Dependencies
 
 - `github.com/spf13/cobra`: CLI framework for building command-line applications
-- `github.com/xwb1989/sqlparser`: SQL parsing library (used minimally for validation)
 - Standard library packages: `fmt`, `os`, `io`, `regexp`, `strings` for basic operations
 
 ## Common Commands
@@ -128,8 +135,8 @@ godoc -http=:6060
 
 ## Current Status
 
-The project is in early development with the following implemented:
-- ✅ CLI framework using Cobra
+The project has reached a functional state with complete PostgreSQL support:
+- ✅ CLI framework using Cobra with dialect selection (--dialect flag)
 - ✅ File reading functionality with error handling
 - ✅ Package structure and comprehensive documentation
 - ✅ PostgreSQL SQL parsing (CREATE TABLE statements)
@@ -137,10 +144,16 @@ The project is in early development with the following implemented:
   - ✅ Primary key constraints
   - ✅ Foreign key constraints (basic support)
   - ✅ PostgreSQL-specific types (BIGSERIAL, TIMESTAMP WITH TIME ZONE, etc.)
-- 🚧 Drizzle schema generation (in development)
-- 🚧 TypeScript output generation (planned)
+- ✅ Drizzle ORM schema generation for PostgreSQL
+  - ✅ Complete type mapping (BIGSERIAL → bigserial, VARCHAR → varchar, etc.)
+  - ✅ Constraint mapping (NOT NULL → .notNull(), DEFAULT → .default(), etc.)
+  - ✅ Naming convention support (camelCase, PascalCase, snake_case)
+  - ✅ TypeScript code generation with proper imports
+- ✅ TypeScript output generation with formatted code
+- ✅ Complete end-to-end conversion pipeline
 - 🚧 MySQL parser (planned)
 - 🚧 Spanner parser (planned)
+- 🚧 Foreign key relationships in generated schema (planned)
 - 🚧 Test suite (planned)
 
 ## Future Enhancements

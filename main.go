@@ -17,6 +17,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/konojunya/sql-to-drizzle-schema/internal/generator"
 	"github.com/konojunya/sql-to-drizzle-schema/internal/parser"
 	"github.com/konojunya/sql-to-drizzle-schema/internal/reader"
 	"github.com/spf13/cobra"
@@ -137,12 +138,18 @@ Example usage:
 			}
 		}
 		
-		// TODO: Implement Drizzle schema generation
-		// This will include:
-		// 1. Converting SQL types to Drizzle types
-		// 2. Generating TypeScript code with proper imports
-		// 3. Writing the output file
-		fmt.Println("\nDrizzle schema generation will be implemented next...")
+		// Generate Drizzle schema
+		fmt.Println("\nGenerating Drizzle ORM schema...")
+		generatorOptions := generator.DefaultGeneratorOptions()
+		
+		err = generator.GenerateSchemaToFile(parseResult.Tables, dialect, outputFile, generatorOptions)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error generating schema: %v\n", err)
+			os.Exit(1)
+		}
+		
+		fmt.Printf("✅ Successfully generated Drizzle schema: %s\n", outputFile)
+		fmt.Printf("📝 Generated %d table definition(s)\n", len(parseResult.Tables))
 	},
 }
 
