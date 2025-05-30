@@ -260,9 +260,9 @@ make security              # Security scanning
 
 For security reasons, the CI pipeline has different behaviors based on the contributor:
 
-1. **Repository Owner/Maintainers**: CI runs automatically on all pushes and PRs
+1. **konojunya**: CI runs automatically on all pushes and PRs
 2. **External Contributors**: CI is skipped by default and must be triggered manually
-3. **Manual CI Trigger**: Maintainers can comment `/run-ci` on a PR to run the full CI pipeline
+3. **Manual CI Trigger**: konojunya can comment `/run-ci` on a PR to run the full CI pipeline
 
 This prevents external contributors from consuming excessive CI resources while still allowing thorough testing of contributions after review.
 

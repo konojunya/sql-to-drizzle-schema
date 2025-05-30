@@ -30,12 +30,12 @@ jobs:
           exit 0
         fi
         
-        # For pull requests, check if author is maintainer or if triggered by comment
+        # For pull requests, check if author is konojunya or if triggered by comment
         if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-          # Allow if PR author is repository owner
-          if [[ "${{ github.event.pull_request.user.login }}" == "${{ github.repository_owner }}" ]]; then
+          # Allow if PR author is konojunya
+          if [[ "${{ github.event.pull_request.user.login }}" == "konojunya" ]]; then
             echo "should-run=true" >> $GITHUB_OUTPUT
-            echo "✅ Running CI for repository owner PR"
+            echo "✅ Running CI for konojunya PR"
             exit 0
           fi
           
@@ -45,7 +45,7 @@ jobs:
           exit 0
         fi
         
-        # For issue comments, check if commenter is maintainer and comment contains trigger
+        # For issue comments, check if commenter is konojunya and comment contains trigger
         if [[ "${{ github.event_name }}" == "issue_comment" ]]; then
           # Only run on PR comments
           if [[ "${{ github.event.issue.pull_request }}" == "" ]]; then
@@ -54,12 +54,12 @@ jobs:
             exit 0
           fi
           
-          # Check if commenter is repository owner/maintainer
-          if [[ "${{ github.event.comment.user.login }}" == "${{ github.repository_owner }}" ]]; then
+          # Check if commenter is konojunya
+          if [[ "${{ github.event.comment.user.login }}" == "konojunya" ]]; then
             # Check if comment contains trigger phrase
             if [[ "${{ github.event.comment.body }}" == *"/run-ci"* ]]; then
               echo "should-run=true" >> $GITHUB_OUTPUT
-              echo "✅ Running CI triggered by maintainer comment"
+              echo "✅ Running CI triggered by konojunya comment"
               exit 0
             fi
           fi
