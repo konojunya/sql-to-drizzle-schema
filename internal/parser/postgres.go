@@ -157,7 +157,7 @@ func (p *PostgreSQLParser) parseColumnRegex(columnDef string, options ParseOptio
 
 	// Basic column regex: name type [constraints...]
 	// Allow more flexible type matching including WITH TIME ZONE
-	columnRegex := regexp.MustCompile(`(?i)^\s*(\w+)\s+((?:[A-Z]+(?:\([^)]*\))?(?:\s+WITH\s+TIME\s+ZONE)?)+)\s*(.*)$`)
+	columnRegex := regexp.MustCompile(`(?i)^\s*(\w+)\s+((?:[A-Za-z]+(?:\([^)]*\))?(?:\s+WITH\s+TIME\s+ZONE)?)+)\s*(.*)$`)
 	matches := columnRegex.FindStringSubmatch(columnDef)
 
 	if len(matches) < 3 {
@@ -174,7 +174,7 @@ func (p *PostgreSQLParser) parseColumnRegex(columnDef string, options ParseOptio
 
 	// Parse type with length
 	if strings.Contains(column.Type, "(") {
-		typeRegex := regexp.MustCompile(`([A-Z]+)\((\d+)(?:,\s*(\d+))?\)`)
+		typeRegex := regexp.MustCompile(`([A-Za-z]+)\((\d+)(?:,\s*(\d+))?\)`)
 		typeMatches := typeRegex.FindStringSubmatch(column.Type)
 		if len(typeMatches) >= 3 {
 			column.Type = typeMatches[1]
@@ -328,8 +328,8 @@ func (p *PostgreSQLParser) splitTableItems(body string) []string {
 // splitStatements splits SQL content into individual statements
 // This is a simple implementation that splits on semicolons
 func (p *PostgreSQLParser) splitStatements(content string) []string {
-	// Remove SQL comments (-- style)
-	commentRegex := regexp.MustCompile(`--.*$`)
+	// Remove SQL comments (-- style) using multiline flag
+	commentRegex := regexp.MustCompile(`(?m)--.*$`)
 	content = commentRegex.ReplaceAllString(content, "")
 
 	// Split on semicolons, but be careful about semicolons in strings
