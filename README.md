@@ -128,7 +128,7 @@ CREATE TABLE role_permissions (
 import { bigint, bigserial, pgTable, text, timestamp, unique, varchar } from 'drizzle-orm/pg-core';
 
 // users table
-export const users = pgTable('users', {
+export const usersTable = pgTable('users', {
   id: bigserial('id', { mode: 'number' }).notNull().primaryKey(),
   name: varchar('name', { length: 255 }).notNull(),
   email: varchar('email', { length: 255 }).notNull().unique(),
@@ -140,24 +140,24 @@ export const users = pgTable('users', {
 });
 
 // posts table
-export const posts = pgTable('posts', {
+export const postsTable = pgTable('posts', {
   id: bigserial('id', { mode: 'number' }).notNull(),
   title: varchar('title', { length: 255 }).notNull(),
   content: text('content').notNull(),
-  userId: bigint('user_id', { mode: 'number' }).notNull().references(() => users.id),
+  userId: bigint('user_id', { mode: 'number' }).notNull().references(() => usersTable.id),
   deletedAt: timestamp('deleted_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
 });
 
 // role_permissions table
-export const rolePermissions = pgTable('role_permissions', {
+export const rolePermissionsTable = pgTable('role_permissions', {
   roleId: bigint('role_id', { mode: 'number' }).notNull(),
   permissionId: bigint('permission_id', { mode: 'number' }).notNull(),
   grantedAt: timestamp('granted_at', { withTimezone: true }).notNull().defaultNow()
 });
 
-export const uniqueRolePermission = unique('unique_role_permission').on(rolePermissions.roleId, rolePermissions.permissionId);
+export const uniqueRolePermission = unique('unique_role_permission').on(rolePermissionsTable.roleId, rolePermissionsTable.permissionId);
 ```
 
 ### Running the Example

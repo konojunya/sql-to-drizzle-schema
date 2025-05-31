@@ -304,7 +304,7 @@ func (g *PostgreSQLSchemaGenerator) GenerateTable(table parser.Table, options Ge
 	}
 
 	// Start table definition
-	builder.WriteString(fmt.Sprintf("export const %s%s = pgTable('%s', {\n", options.ExportPrefix, exportName, table.Name))
+	builder.WriteString(fmt.Sprintf("export const %s%sTable = pgTable('%s', {\n", options.ExportPrefix, exportName, table.Name))
 
 	// Generate columns
 	for i, column := range table.Columns {
@@ -338,7 +338,7 @@ func (g *PostgreSQLSchemaGenerator) GenerateTable(table parser.Table, options Ge
 				referencedTableName := g.convertCase(fk.ReferencedTable, options.TableNameCase)
 				if len(fk.ReferencedColumns) == 1 {
 					referencedColumnName := g.convertCase(fk.ReferencedColumns[0], options.ColumnNameCase)
-					builder.WriteString(fmt.Sprintf(".references(() => %s.%s)", referencedTableName, referencedColumnName))
+					builder.WriteString(fmt.Sprintf(".references(() => %sTable.%s)", referencedTableName, referencedColumnName))
 				}
 				break
 			}
@@ -361,7 +361,7 @@ func (g *PostgreSQLSchemaGenerator) GenerateTable(table parser.Table, options Ge
 				constraintName := g.convertCase(constraint.Name, options.TableNameCase)
 				var constraintColumns []string
 				for _, col := range constraint.Columns {
-					constraintColumns = append(constraintColumns, fmt.Sprintf("%s.%s", exportName, g.convertCase(col, options.ColumnNameCase)))
+					constraintColumns = append(constraintColumns, fmt.Sprintf("%sTable.%s", exportName, g.convertCase(col, options.ColumnNameCase)))
 				}
 				builder.WriteString(fmt.Sprintf("export const %s = unique('%s').on(%s);",
 					constraintName,
@@ -374,7 +374,7 @@ func (g *PostgreSQLSchemaGenerator) GenerateTable(table parser.Table, options Ge
 
 	return &GeneratedTable{
 		OriginalName: table.Name,
-		ExportName:   exportName,
+		ExportName:   exportName + "Table",
 		Definition:   builder.String(),
 	}, nil
 }

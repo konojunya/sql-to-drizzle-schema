@@ -71,7 +71,7 @@ func TestEndToEndConversion(t *testing.T) {
 			);`,
 			expectedTables:   []string{"users", "posts", "comments"},
 			expectedImports:  []string{"bigserial", "varchar", "text", "bigint", "timestamp", "pgTable"},
-			expectedFeatures: []string{"references(() => users.id)", "references(() => posts.id)"},
+			expectedFeatures: []string{"references(() => usersTable.id)", "references(() => postsTable.id)"},
 			expectError:      false,
 		},
 		{
@@ -263,9 +263,9 @@ func TestTableDependencyOrdering(t *testing.T) {
 	contentStr := string(generatedContent)
 
 	// Find positions of each table definition
-	usersPos := strings.Index(contentStr, "export const users")
-	postsPos := strings.Index(contentStr, "export const posts")
-	commentsPos := strings.Index(contentStr, "export const comments")
+	usersPos := strings.Index(contentStr, "export const usersTable")
+	postsPos := strings.Index(contentStr, "export const postsTable")
+	commentsPos := strings.Index(contentStr, "export const commentsTable")
 
 	if usersPos == -1 || postsPos == -1 || commentsPos == -1 {
 		t.Fatal("Not all table definitions found in generated content")
@@ -277,11 +277,11 @@ func TestTableDependencyOrdering(t *testing.T) {
 	}
 
 	// Verify foreign key references are correct
-	if !strings.Contains(contentStr, "references(() => users.id)") {
-		t.Error("Missing foreign key reference to users.id")
+	if !strings.Contains(contentStr, "references(() => usersTable.id)") {
+		t.Error("Missing foreign key reference to usersTable.id")
 	}
-	if !strings.Contains(contentStr, "references(() => posts.id)") {
-		t.Error("Missing foreign key reference to posts.id")
+	if !strings.Contains(contentStr, "references(() => postsTable.id)") {
+		t.Error("Missing foreign key reference to postsTable.id")
 	}
 }
 
@@ -369,7 +369,7 @@ func TestNamingConventions(t *testing.T) {
 
 			contentStr := string(generatedContent)
 
-			if !strings.Contains(contentStr, "export const "+tt.expectedTable) {
+			if !strings.Contains(contentStr, "export const "+tt.expectedTable+"Table") {
 				t.Errorf("Expected table name %s not found in generated content", tt.expectedTable)
 			}
 

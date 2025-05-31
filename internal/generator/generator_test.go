@@ -100,7 +100,7 @@ func TestWriteSchemaToFile(t *testing.T) {
 	}{
 		{
 			name:        "Valid schema write",
-			content:     "export const users = pgTable('users', {});",
+			content:     "export const usersTable = pgTable('users', {});",
 			filename:    filepath.Join(tempDir, "test.ts"),
 			expectError: false,
 		},
