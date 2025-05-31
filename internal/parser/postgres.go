@@ -152,6 +152,9 @@ func (p *PostgreSQLParser) parseTableBody(table *Table, body string, options Par
 
 // parseColumnRegex parses a column definition using regex
 func (p *PostgreSQLParser) parseColumnRegex(columnDef string, options ParseOptions) (*Column, error) {
+	// Normalize whitespace in column definition to handle multiline definitions
+	columnDef = regexp.MustCompile(`\s+`).ReplaceAllString(strings.TrimSpace(columnDef), " ")
+	
 	// Basic column regex: name type [constraints...]
 	// Allow more flexible type matching including WITH TIME ZONE
 	columnRegex := regexp.MustCompile(`(?i)^\s*(\w+)\s+((?:[A-Z]+(?:\([^)]*\))?(?:\s+WITH\s+TIME\s+ZONE)?)+)\s*(.*)$`)
@@ -207,8 +210,8 @@ func (p *PostgreSQLParser) parseColumnRegex(columnDef string, options ParseOptio
 			column.Unique = true
 		}
 
-		// Parse DEFAULT value
-		defaultRegex := regexp.MustCompile(`(?i)DEFAULT\s+([^,\s]+(?:\s+[^,\s]+)*)`)
+		// Parse DEFAULT value - handle complex values including JSON
+		defaultRegex := regexp.MustCompile(`(?i)DEFAULT\s+(.+?)(?:\s+(?:CHECK|UNIQUE|NOT\s+NULL|PRIMARY\s+KEY)\b|$)`)
 		defaultMatches := defaultRegex.FindStringSubmatch(matches[3])
 		if len(defaultMatches) >= 2 {
 			defaultVal := strings.TrimSpace(defaultMatches[1])
@@ -278,6 +281,7 @@ func (p *PostgreSQLParser) splitTableItems(body string) []string {
 	items := []string{}
 	current := ""
 	parenDepth := 0
+	braceDepth := 0
 	inString := false
 	stringChar := byte(0)
 
@@ -292,7 +296,11 @@ func (p *PostgreSQLParser) splitTableItems(body string) []string {
 				parenDepth++
 			} else if char == ')' {
 				parenDepth--
-			} else if char == ',' && parenDepth == 0 {
+			} else if char == '{' {
+				braceDepth++
+			} else if char == '}' {
+				braceDepth--
+			} else if char == ',' && parenDepth == 0 && braceDepth == 0 {
 				if strings.TrimSpace(current) != "" {
 					items = append(items, strings.TrimSpace(current))
 				}
