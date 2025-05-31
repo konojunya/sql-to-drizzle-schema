@@ -154,7 +154,7 @@ func (p *PostgreSQLParser) parseTableBody(table *Table, body string, options Par
 func (p *PostgreSQLParser) parseColumnRegex(columnDef string, options ParseOptions) (*Column, error) {
 	// Normalize whitespace in column definition to handle multiline definitions
 	columnDef = regexp.MustCompile(`\s+`).ReplaceAllString(strings.TrimSpace(columnDef), " ")
-	
+
 	// Basic column regex: name type [constraints...]
 	// Allow more flexible type matching including WITH TIME ZONE
 	columnRegex := regexp.MustCompile(`(?i)^\s*(\w+)\s+((?:[A-Z]+(?:\([^)]*\))?(?:\s+WITH\s+TIME\s+ZONE)?)+)\s*(.*)$`)
