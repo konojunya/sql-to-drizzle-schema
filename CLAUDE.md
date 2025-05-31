@@ -185,6 +185,12 @@ godoc -http=:6060
 - Provide context in error messages
 - Fail fast with meaningful error messages
 
+### Development Workflow
+- **IMPORTANT**: Always run `make ci` at the end of each task to verify no formatting or linting issues
+- Ensure `make ci` passes with no diffs before committing changes
+- If `make ci` produces diffs, commit the formatting changes separately
+- This ensures CI pipeline compatibility and consistent code formatting
+
 ## Current Status
 
 The project has reached a functional state with complete PostgreSQL support:

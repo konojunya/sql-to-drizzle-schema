@@ -363,9 +363,9 @@ func (g *PostgreSQLSchemaGenerator) GenerateTable(table parser.Table, options Ge
 				for _, col := range constraint.Columns {
 					constraintColumns = append(constraintColumns, fmt.Sprintf("%s.%s", exportName, g.convertCase(col, options.ColumnNameCase)))
 				}
-				builder.WriteString(fmt.Sprintf("export const %s = unique('%s').on(%s);", 
-					constraintName, 
-					constraint.Name, 
+				builder.WriteString(fmt.Sprintf("export const %s = unique('%s').on(%s);",
+					constraintName,
+					constraint.Name,
 					strings.Join(constraintColumns, ", ")))
 				builder.WriteString("\n")
 			}
