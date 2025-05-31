@@ -244,6 +244,9 @@ go fmt ./...               # Format code
 - ✅ File reading functionality
 - ✅ Package structure and comprehensive documentation
 - ✅ PostgreSQL SQL parsing (CREATE TABLE statements)
+  - ✅ Robust inline comment handling (-- comments)
+  - ✅ Mixed case column type support (varchar, BIGSERIAL, etc.)
+  - ✅ Complex schema support with proper regex parsing
 - ✅ Database dialect selection (--dialect flag)
 - ✅ Drizzle ORM schema generation for PostgreSQL
 - ✅ TypeScript output generation with proper imports

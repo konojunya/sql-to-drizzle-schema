@@ -193,6 +193,8 @@ The project has reached a functional state with complete PostgreSQL support:
 - ✅ Package structure and comprehensive documentation
 - ✅ PostgreSQL SQL parsing (CREATE TABLE statements)
   - ✅ Column definitions with types, constraints, defaults
+  - ✅ Inline comment handling (-- comments) with proper multiline regex processing
+  - ✅ Mixed case column type support (varchar, BIGSERIAL, etc.)
   - ✅ Primary key constraints
   - ✅ Foreign key constraints (basic support)
   - ✅ PostgreSQL-specific types (BIGSERIAL, TIMESTAMP WITH TIME ZONE, etc.)
