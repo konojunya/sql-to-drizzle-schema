@@ -107,6 +107,14 @@ CREATE TABLE posts (
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_posts_users FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+-- role_permissions table with unique constraint
+CREATE TABLE role_permissions (
+  role_id BIGINT NOT NULL,
+  permission_id BIGINT NOT NULL,
+  granted_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT unique_role_permission UNIQUE (role_id, permission_id)
+);
 ```
 
 ### Actual Output (TypeScript)
@@ -117,7 +125,7 @@ CREATE TABLE posts (
 // Source: SQL DDL file
 // Generated at: 2025-05-30T15:34:10Z
 
-import { bigint, bigserial, boolean, decimal, doublePrecision, integer, pgTable, real, smallint, text, timestamp, varchar } from 'drizzle-orm/pg-core';
+import { bigint, bigserial, pgTable, text, timestamp, unique, varchar } from 'drizzle-orm/pg-core';
 
 // users table
 export const users = pgTable('users', {
@@ -142,16 +150,14 @@ export const posts = pgTable('posts', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
 });
 
-// comments table
-export const comments = pgTable('comments', {
-  id: bigserial('id', { mode: 'number' }).notNull(),
-  content: text('content').notNull(),
-  userId: bigint('user_id', { mode: 'number' }).notNull().references(() => users.id),
-  postId: bigint('post_id', { mode: 'number' }).notNull().references(() => posts.id),
-  deletedAt: timestamp('deleted_at', { withTimezone: true }),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
+// role_permissions table
+export const rolePermissions = pgTable('role_permissions', {
+  roleId: bigint('role_id', { mode: 'number' }).notNull(),
+  permissionId: bigint('permission_id', { mode: 'number' }).notNull(),
+  grantedAt: timestamp('granted_at', { withTimezone: true }).notNull().defaultNow()
 });
+
+export const uniqueRolePermission = unique('unique_role_permission').on(rolePermissions.roleId, rolePermissions.permissionId);
 ```
 
 ### Running the Example
@@ -246,9 +252,11 @@ go fmt ./...               # Format code
 - ✅ PostgreSQL SQL parsing (CREATE TABLE statements)
   - ✅ Robust inline comment handling (-- comments)
   - ✅ Mixed case column type support (varchar, BIGSERIAL, etc.)
+  - ✅ UNIQUE constraints (single and multi-column)
   - ✅ Complex schema support with proper regex parsing
 - ✅ Database dialect selection (--dialect flag)
 - ✅ Drizzle ORM schema generation for PostgreSQL
+- ✅ UNIQUE constraint generation with unique().on() syntax
 - ✅ TypeScript output generation with proper imports
 - ✅ Complete end-to-end conversion pipeline
 - ✅ Foreign key relationships with .references() support
@@ -288,6 +296,7 @@ go test -v ./...           # Detailed test output
 - SQL parsing with various PostgreSQL features
 - Type mapping from PostgreSQL to Drizzle ORM
 - Foreign key relationship handling
+- UNIQUE constraint parsing and generation
 - Table dependency ordering
 - Naming convention transformations
 - Error handling and edge cases

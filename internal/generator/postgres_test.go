@@ -252,6 +252,41 @@ func TestPostgreSQLSchemaGenerator_GenerateTable(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "Table with unique constraint",
+			table: parser.Table{
+				Name: "role_permissions",
+				Columns: []parser.Column{
+					{
+						Name:    "role_id",
+						Type:    "BIGINT",
+						NotNull: true,
+					},
+					{
+						Name:    "permission_id",
+						Type:    "BIGINT",
+						NotNull: true,
+					},
+				},
+				Constraints: []parser.Constraint{
+					{
+						Name:    "unique_role_permission",
+						Type:    "UNIQUE",
+						Columns: []string{"role_id", "permission_id"},
+					},
+				},
+			},
+			options:        options,
+			expectedExport: "rolePermissions",
+			expectedContent: []string{
+				"export const rolePermissions = pgTable('role_permissions', {",
+				"roleId: bigint('role_id', { mode: 'number' }).notNull()",
+				"permissionId: bigint('permission_id', { mode: 'number' }).notNull()",
+				"});",
+				"export const uniqueRolePermission = unique('unique_role_permission').on(rolePermissions.roleId, rolePermissions.permissionId);",
+			},
+			wantErr: false,
+		},
 	}
 
 	for _, tt := range tests {

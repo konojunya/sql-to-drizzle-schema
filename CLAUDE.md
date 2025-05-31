@@ -197,10 +197,12 @@ The project has reached a functional state with complete PostgreSQL support:
   - ✅ Mixed case column type support (varchar, BIGSERIAL, etc.)
   - ✅ Primary key constraints
   - ✅ Foreign key constraints (basic support)
+  - ✅ UNIQUE constraints (single and multi-column)
   - ✅ PostgreSQL-specific types (BIGSERIAL, TIMESTAMP WITH TIME ZONE, etc.)
 - ✅ Drizzle ORM schema generation for PostgreSQL
   - ✅ Complete type mapping (BIGSERIAL → bigserial, VARCHAR → varchar, etc.)
   - ✅ Constraint mapping (NOT NULL → .notNull(), DEFAULT → .default(), etc.)
+  - ✅ UNIQUE constraint generation (unique().on() syntax)
   - ✅ Naming convention support (camelCase, PascalCase, snake_case)
   - ✅ TypeScript code generation with proper imports
   - ✅ Auto-generated header comments with "DO NOT EDIT" warnings and timestamps

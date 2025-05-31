@@ -346,6 +346,19 @@ func TestPostgreSQLParser_parseCreateTableRegex(t *testing.T) {
 			wantErr:      false,
 		},
 		{
+			name: "Table with unique constraint",
+			sql: `CREATE TABLE role_permissions (
+				role_id BIGINT NOT NULL,
+				permission_id BIGINT NOT NULL,
+				CONSTRAINT unique_role_permission UNIQUE (role_id, permission_id)
+			);`,
+			expectedName: "role_permissions",
+			expectedCols: 2,
+			expectedPK:   []string{},
+			expectedFKs:  0,
+			wantErr:      false,
+		},
+		{
 			name:    "Invalid table statement",
 			sql:     "INVALID SQL STATEMENT",
 			wantErr: true,

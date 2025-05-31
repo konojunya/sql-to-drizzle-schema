@@ -183,6 +183,13 @@ func (g *PostgreSQLSchemaGenerator) GenerateSchema(tables []parser.Table, option
 			}
 			importSet[drizzleType.Function] = true
 		}
+
+		// Check for unique constraints
+		for _, constraint := range table.Constraints {
+			if constraint.Type == "UNIQUE" {
+				importSet["unique"] = true
+			}
+		}
 	}
 
 	// Generate import statement
@@ -347,6 +354,25 @@ func (g *PostgreSQLSchemaGenerator) GenerateTable(table parser.Table, options Ge
 	}
 
 	builder.WriteString("});")
+
+	// Add unique constraints if any
+	if len(table.Constraints) > 0 {
+		builder.WriteString("\n\n")
+		for _, constraint := range table.Constraints {
+			if constraint.Type == "UNIQUE" {
+				constraintName := g.convertCase(constraint.Name, options.TableNameCase)
+				var constraintColumns []string
+				for _, col := range constraint.Columns {
+					constraintColumns = append(constraintColumns, fmt.Sprintf("%s.%s", exportName, g.convertCase(col, options.ColumnNameCase)))
+				}
+				builder.WriteString(fmt.Sprintf("export const %s = unique('%s').on(%s);", 
+					constraintName, 
+					constraint.Name, 
+					strings.Join(constraintColumns, ", ")))
+				builder.WriteString("\n")
+			}
+		}
+	}
 
 	return &GeneratedTable{
 		OriginalName: table.Name,

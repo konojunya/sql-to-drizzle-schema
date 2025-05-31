@@ -268,6 +268,25 @@ func (p *PostgreSQLParser) parseConstraint(table *Table, constraintDef string, o
 		return nil
 	}
 
+	// Parse UNIQUE constraint
+	if strings.Contains(constraintUpper, "UNIQUE") {
+		uniqueRegex := regexp.MustCompile(`(?i)CONSTRAINT\s+(\w+)\s+UNIQUE\s*\(([^)]+)\)`)
+		matches := uniqueRegex.FindStringSubmatch(constraintDef)
+		if len(matches) >= 3 {
+			columns := strings.Split(strings.ReplaceAll(matches[2], " ", ""), ",")
+			for i, col := range columns {
+				columns[i] = strings.TrimSpace(col)
+			}
+			constraint := Constraint{
+				Name:    matches[1],
+				Type:    "UNIQUE",
+				Columns: columns,
+			}
+			table.Constraints = append(table.Constraints, constraint)
+		}
+		return nil
+	}
+
 	// For now, ignore other constraints
 	if options.IgnoreUnsupported {
 		return nil
