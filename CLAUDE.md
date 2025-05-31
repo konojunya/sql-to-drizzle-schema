@@ -205,7 +205,7 @@ The project has reached a functional state with complete PostgreSQL support:
   - ✅ UNIQUE constraint generation (unique().on() syntax)
   - ✅ Naming convention support (camelCase, PascalCase, snake_case)
   - ✅ TypeScript code generation with proper imports
-  - ✅ Auto-generated header comments with "DO NOT EDIT" warnings and timestamps
+  - ✅ Auto-generated header comments with "DO NOT EDIT" warnings
 - ✅ TypeScript output generation with formatted code
 - ✅ Complete end-to-end conversion pipeline
 - ✅ Foreign key relationships in generated schema
